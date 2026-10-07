@@ -1,1952 +1,1583 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  ShoppingCart, Package, BarChart2, Plus, Edit, Trash2, 
-  AlertTriangle, Check, X, DollarSign,
-  PlusCircle, MinusCircle, AlertCircle, History, Download, Upload, 
-  Search, BookOpen, QrCode, Printer, Camera, 
-  Wallet, UserPlus, UserX, FileText, Calendar
-} from 'lucide-react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
-} from 'recharts';
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My App</title>
+    <!-- ตัวช่วยรัน React และ Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide-react"></script>
+</head>
+<body class="bg-slate-100">
+    <div id="root"></div>
 
-const playSound = (type) => {
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    <script type="text/babel">
+        
+        // 📍 วางโค้ดทั้งหมดที่
+const { useState, useEffect, useMemo, useRef } = React;
+const { ShoppingCart, Package, BarChart2, AlertTriangle, Settings, Plus, Edit, Trash2, Check, X, Search, QrCode, Banknote, Image: ImageIcon, Bell, Truck, Download, Upload, Shield, TrendingUp, TrendingDown, Lock, RefreshCw, UserCheck, History, DollarSign, Eye } = lucideReact;
+      
+const INITIAL_PRODUCTS = [
+  // เครื่องดื่มแอลกอฮอล์
+  { id: '1', name: 'สิงห์ขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 54, selling_price: 62, current_stock: 48, min_stock_alert: 12 },
+  { id: '2', name: 'สิงห์กระป๋อง (ยาว)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 45, selling_price: 52, current_stock: 36, min_stock_alert: 10 },
+  { id: '3', name: 'ลีโอขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 50, selling_price: 58, current_stock: 60, min_stock_alert: 15 },
+  { id: '4', name: 'ลีโอกระป๋อง (ยาว)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 42, selling_price: 48, current_stock: 24, min_stock_alert: 10 },
+  { id: '5', name: 'ช้างขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 48, selling_price: 56, current_stock: 36, min_stock_alert: 12 },
+  { id: '6', name: 'เหล้าขาวใหญ่ (40 ดีกรี)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 105, selling_price: 120, current_stock: 15, min_stock_alert: 5 },
+  { id: '7', name: 'เหล้าขาวเล็ก', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 55, selling_price: 65, current_stock: 20, min_stock_alert: 5 },
+  { id: '8', name: 'หงส์แบน', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 135, selling_price: 150, current_stock: 10, min_stock_alert: 4 },
+  { id: '9', name: 'หงส์กลม', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 260, selling_price: 290, current_stock: 8, min_stock_alert: 3 },
+  { id: '10', name: 'หงส์ลิตร', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 330, selling_price: 360, current_stock: 6, min_stock_alert: 2 },
+  { id: '11', name: 'แสงโสมกลม', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 290, selling_price: 320, current_stock: 7, min_stock_alert: 3 },
+  { id: '12', name: 'โซดาขวด (สิงห์)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 8.5, selling_price: 11, current_stock: 120, min_stock_alert: 24 },
 
-    if (type === 'scan') {
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.08);
-    } else if (type === 'success') {
-      osc.frequency.setValueAtTime(520, ctx.currentTime);
-      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
-      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-    } else if (type === 'delete') {
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.15);
-    }
-  } catch (e) {
-    // Ignore audio context errors
-  }
-};
+  // บุหรี่/ไฟแช็ก
+  { id: '13', name: 'บุหรี่ S แดง', category: 'บุหรี่/ไฟแช็ก', cost_price: 62, selling_price: 72, current_stock: 15, min_stock_alert: 5 },
+  { id: '14', name: 'บุหรี่ S เขียว', category: 'บุหรี่/ไฟแช็ก', cost_price: 62, selling_price: 72, current_stock: 12, min_stock_alert: 5 },
+  { id: '15', name: 'บุหรี่ LM แดง', category: 'บุหรี่/ไฟแช็ก', cost_price: 90, selling_price: 105, current_stock: 20, min_stock_alert: 5 },
+  { id: '16', name: 'ไฟแช็ก', category: 'บุหรี่/ไฟแช็ก', cost_price: 7, selling_price: 12, current_stock: 50, min_stock_alert: 10 },
 
-// คอมโพเนนต์สร้างและแสดง QR Code สแกนจ่ายเงินพร้อมระบบ Fallback ป้องกันรูปเสีย
-const QRCodeDisplay = ({ amount, accountName, accountNo }) => {
-  const [imgError, setImgError] = useState(false);
-  // สร้าง URL QR Code สแกนจ่ายเงินตามยอดรวม
-  const cleanAccountNo = accountNo.replace(/[^0-9]/g, '');
-  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=PROMPTPAY_${cleanAccountNo}_AMT_${amount}`;
-
-  if (imgError) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 p-2 rounded-xl text-center">
-        <svg className="w-32 h-32 text-slate-800" viewBox="0 0 100 100" fill="currentColor">
-          <rect width="100" height="100" fill="white" />
-          <path d="M5 5 h30 v30 h-30 z M10 10 v20 h20 v-20 z M15 15 h10 v10 h-10 z" />
-          <path d="M65 5 h30 v30 h-30 z M70 10 v20 h20 v-20 z M75 15 h10 v10 h-10 z" />
-          <path d="M5 65 h30 v30 h-30 z M10 70 v20 h20 v-20 z M15 75 h10 v10 h-10 z" />
-          <rect x="42" y="8" width="6" height="6" />
-          <rect x="52" y="8" width="6" height="6" />
-          <rect x="42" y="18" width="6" height="12" />
-          <rect x="52" y="24" width="6" height="6" />
-          <rect x="8" y="42" width="6" height="12" />
-          <rect x="18" y="42" width="12" height="6" />
-          <rect x="24" y="52" width="6" height="6" />
-          <rect x="40" y="40" width="20" height="20" rx="4" fill="#ec4899" />
-          <text x="50" y="53" fontSize="7" fill="white" textAnchor="middle" fontWeight="bold">QR</text>
-          <rect x="65" y="42" width="12" height="6" />
-          <rect x="82" y="42" width="10" height="6" />
-          <rect x="70" y="52" width="6" height="10" />
-          <rect x="42" y="68" width="6" height="12" />
-          <rect x="52" y="68" width="12" height="6" />
-          <rect x="68" y="68" width="8" height="8" />
-          <rect x="80" y="68" width="12" height="6" />
-          <rect x="42" y="84" width="12" height="8" />
-        </svg>
-      </div>
-    );
-  }
-
-  return (
-    <img 
-      src={qrApiUrl} 
-      alt={`QR Code ชำระเงิน ฿${amount}`} 
-      onError={() => setImgError(true)}
-      className="w-full h-full object-contain rounded-lg shadow-sm"
-    />
-  );
-};
-
-const SEED_INVENTORY = [
-  { id: '1', barcode: '8850001', name: 'สิงห์ขวด', category: 'แอลกอฮอล์', cost_price: 55, selling_price: 65, current_stock: 48, min_stock_alert: 12, pack_size: 12, pack_price: 760 },
-  { id: '2', barcode: '8850002', name: 'สิงห์กระป๋อง', category: 'แอลกอฮอล์', cost_price: 35, selling_price: 42, current_stock: 48, min_stock_alert: 24, pack_size: 24, pack_price: 980 },
-  { id: '3', barcode: '8850003', name: 'ลีโอขวด', category: 'แอลกอฮอล์', cost_price: 52, selling_price: 60, current_stock: 60, min_stock_alert: 12, pack_size: 12, pack_price: 700 },
-  { id: '4', barcode: '8850004', name: 'ลีโอกระป๋อง', category: 'แอลกอฮอล์', cost_price: 33, selling_price: 40, current_stock: 72, min_stock_alert: 24, pack_size: 24, pack_price: 930 },
-  { id: '5', barcode: '8850005', name: 'เหล้าขาวใหญ่', category: 'แอลกอฮอล์', cost_price: 110, selling_price: 125, current_stock: 12, min_stock_alert: 5, pack_size: 12, pack_price: 1440 },
-  { id: '6', barcode: '8850006', name: 'แสงโสมกลม', category: 'แอลกอฮอล์', cost_price: 280, selling_price: 320, current_stock: 6, min_stock_alert: 3, pack_size: 12, pack_price: 3750 },
-  { id: '7', barcode: '8850007', name: 'บุหรี่ LM แดง', category: 'บุหรี่/ไฟแช็ก', cost_price: 95, selling_price: 105, current_stock: 20, min_stock_alert: 10, pack_size: 10, pack_price: 1020 },
-  { id: '8', barcode: '8850008', name: 'ไฟแช็ก', category: 'บุหรี่/ไฟแช็ก', cost_price: 5, selling_price: 10, current_stock: 50, min_stock_alert: 15, pack_size: 50, pack_price: 230 },
-  { id: '9', barcode: '8850009', name: 'เอ็ม 150', category: 'เครื่องดื่มชูกำลัง', cost_price: 8.5, selling_price: 12, current_stock: 100, min_stock_alert: 30, pack_size: 10, pack_price: 115 },
-  { id: '10', barcode: '8850010', name: 'สปอนเซอร์', category: 'เครื่องดื่มชูกำลัง', cost_price: 10, selling_price: 15, current_stock: 50, min_stock_alert: 20, pack_size: 24, pack_price: 340 },
-  { id: '11', barcode: '8850011', name: 'กาแฟซอง', category: 'เครื่องดื่มชูกำลัง', cost_price: 4, selling_price: 7, current_stock: 200, min_stock_alert: 50, pack_size: 27, pack_price: 160 },
+  // เครื่องดื่มชูกำลัง/กาแฟ
+  { id: '17', name: 'เอ็ม 150', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 12, current_stock: 48, min_stock_alert: 12 },
+  { id: '18', name: 'ลีโพ', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 12, current_stock: 36, min_stock_alert: 12 },
+  { id: '19', name: 'สปอนเซอร์', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 13, current_stock: 36, min_stock_alert: 10 },
+  { id: '20', name: 'คาราบาวแดง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 8.5, selling_price: 10, current_stock: 48, min_stock_alert: 12 },
+  { id: '21', name: 'กะทิงแดง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 8.5, selling_price: 10, current_stock: 24, min_stock_alert: 10 },
+  { id: '22', name: 'กาแฟซอง (เบอร์ดี้)', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 4.5, selling_price: 6, current_stock: 100, min_stock_alert: 20 },
+  { id: '23', name: 'โอวัลตินซอง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 5, selling_price: 7, current_stock: 60, min_stock_alert: 15 }
 ];
 
-const SEED_CUSTOMERS = [
-  { id: 'c1', name: 'ป้าต้อย (บ้านสวน)', phone: '081-234-5678', balance: 450, totalPaid: 1200 },
-  { id: 'c2', name: 'น้าชาติ (ช่างแอร์)', phone: '089-876-5432', balance: 820, totalPaid: 3400 },
-  { id: 'c3', name: 'ผู้ใหญ่บ้าน', phone: '086-111-2233', balance: 0, totalPaid: 5800 }
-];
-
-const SEED_DEBT_LOGS = [
-  { id: 'd1', customerId: 'c1', customerName: 'ป้าต้อย (บ้านสวน)', type: 'credit', amount: 450, date: new Date().toISOString(), note: 'ติดหนี้ค่าสิงห์ขวด x3' },
-  { id: 'd2', customerId: 'c2', customerName: 'น้าชาติ (ช่างแอร์)', type: 'credit', amount: 820, date: new Date().toISOString(), note: 'ติดหนี้ค่าบุหรี่ LM + ลีโอกระป๋อง' }
-];
-
-export default function GroceryApp() {
-  const [activeTab, setActiveTab] = useState('pos'); // pos, inventory, debts, history, dashboard
-  
-  // Auto Save states via LocalStorage
-  const [inventory, setInventory] = useState(() => {
-    const saved = localStorage.getItem('grocery_inventory');
-    return saved ? JSON.parse(saved) : SEED_INVENTORY;
+export default function App() {
+  // State หลักสำหรับเก็บข้อมูล
+  const [products, setProducts] = useState(() => {
+    const saved = localStorage.getItem('grocery_products');
+    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
   });
+
   const [salesHistory, setSalesHistory] = useState(() => {
-    const saved = localStorage.getItem('grocery_sales');
+    const saved = localStorage.getItem('grocery_sales_history');
     return saved ? JSON.parse(saved) : [];
   });
-  const [customers, setCustomers] = useState(() => {
-    const saved = localStorage.getItem('grocery_customers');
-    return saved ? JSON.parse(saved) : SEED_CUSTOMERS;
-  });
-  const [debtLogs, setDebtLogs] = useState(() => {
-    const saved = localStorage.getItem('grocery_debt_logs');
-    return saved ? JSON.parse(saved) : SEED_DEBT_LOGS;
+
+  const [debtors, setDebtors] = useState(() => {
+    const saved = localStorage.getItem('grocery_debtors');
+    return saved ? JSON.parse(saved) : [];
   });
 
-  const [toastMessage, setToastMessage] = useState(null);
-  const [lastReceipt, setLastReceipt] = useState(null);
+  const [adminPassword, setAdminPassword] = useState(() => {
+    return localStorage.getItem('grocery_admin_password') || '4497';
+  });
+
+  const [qrCodeImage, setQrCodeImage] = useState(() => {
+    return localStorage.getItem('grocery_qr_code') || 'https://placehold.co/300x300/fbcfe8/831843?text=PromptPay+QR';
+  });
+
+  // State สำหรับ UI Navigation
+  const [activeTab, setActiveTab] = useState('pos'); // 'pos', 'inventory', 'history', 'debtors'
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('ทั้งหมด');
+
+  // State ตะกร้าสินค้าหน้าร้าน (POS)
+  const [cart, setCart] = useState([]);
+
+  // Modals & Dialogs
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash', 'qr', 'debt'
+  const [cashReceived, setCashReceived] = useState('');
+  const [debtorName, setDebtorName] = useState('');
+
+  const [isLowStockModalOpen, setIsLowStockModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Modal รับสินค้าเข้าแบบแพ็ค
+  const [restockProduct, setRestockProduct] = useState(null);
+  const [restockData, setRestockData] = useState({ packs: 1, piecesPerPack: 12, pricePerPack: '' });
+
+  // Modal เพิ่มสินค้าแบบเป็นชุด (Bulk)
+  const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
+  const [bulkItems, setBulkItems] = useState([
+    { name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }
+  ]);
+
+  // Modal แก้ไขสินค้า
+  const [editingProduct, setEditingProduct] = useState(null);
+
+  // Modal แก้ไขบิล
+  const [editingBill, setEditingBill] = useState(null);
+
+  // Password Verification Dialog
+  const [passwordModal, setPasswordModal] = useState({ isOpen: false, title: '', action: null });
+  const [passwordInput, setPasswordInput] = useState('');
+
+  // Custom Alert / Confirm Dialog
+  const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
 
   useEffect(() => {
-    localStorage.setItem('grocery_inventory', JSON.stringify(inventory));
-  }, [inventory]);
+    localStorage.setItem('grocery_products', JSON.stringify(products));
+  }, [products]);
 
   useEffect(() => {
-    localStorage.setItem('grocery_sales', JSON.stringify(salesHistory));
+    localStorage.setItem('grocery_sales_history', JSON.stringify(salesHistory));
   }, [salesHistory]);
 
   useEffect(() => {
-    localStorage.setItem('grocery_customers', JSON.stringify(customers));
-  }, [customers]);
+    localStorage.setItem('grocery_debtors', JSON.stringify(debtors));
+  }, [debtors]);
 
   useEffect(() => {
-    localStorage.setItem('grocery_debt_logs', JSON.stringify(debtLogs));
-  }, [debtLogs]);
+    localStorage.setItem('grocery_admin_password', adminPassword);
+  }, [adminPassword]);
 
-  const triggerToast = (msg, type = 'success') => {
-    setToastMessage({ msg, type });
-    setTimeout(() => setToastMessage(null), 3000);
+  useEffect(() => {
+    localStorage.setItem('grocery_qr_code', qrCodeImage);
+  }, [qrCodeImage]);
+
+  // แสดงแจ้งเตือน Custom Dialog
+  const showAlert = (title, message) => {
+    setAlertDialog({ isOpen: true, title, message });
   };
 
+  // ตรวจสอบสินค้าใกล้หมด
   const lowStockItems = useMemo(() => {
-    return inventory.filter(item => item.current_stock <= item.min_stock_alert);
-  }, [inventory]);
+    return products.filter(p => p.current_stock <= p.min_stock_alert);
+  }, [products]);
 
-  const handleEditSale = (saleId, newQty) => {
-    const targetSale = salesHistory.find(s => s.id === saleId);
-    if (!targetSale) return;
-
-    if (newQty <= 0) {
-      triggerToast('จำนวนขายต้องมากกว่า 0 (หากต้องการยกเลิก ให้ใช้ปุ่มยกเลิกรายการ)', 'error');
-      return;
-    }
-
-    const qtyDiff = newQty - targetSale.qty;
-    const unitPrice = targetSale.revenue / targetSale.qty;
-    const unitCost = targetSale.cost / targetSale.qty;
-
-    const targetProd = inventory.find(i => i.id === targetSale.productId);
-    if (qtyDiff > 0 && targetProd && targetProd.current_stock < qtyDiff) {
-      triggerToast(`สต็อกสินค้าไม่พอสำหรับปรับเพิ่มจำนวนขาย (เหลือ ${targetProd.current_stock} ชิ้น)`, 'error');
-      return;
-    }
-
-    setSalesHistory(prev => prev.map(s => {
-      if (s.id === saleId) {
-        const updatedRevenue = unitPrice * newQty;
-        const updatedCost = unitCost * newQty;
-        return {
-          ...s,
-          qty: newQty,
-          revenue: updatedRevenue,
-          cost: updatedCost,
-          profit: updatedRevenue - updatedCost
-        };
-      }
-      return s;
-    }));
-
-    if (targetProd) {
-      setInventory(prev => prev.map(item => {
-        if (item.id === targetSale.productId) {
-          return { ...item, current_stock: Math.max(0, item.current_stock - qtyDiff) };
-        }
-        return item;
-      }));
-    }
-
-    playSound('success');
-    triggerToast(`แก้ไขยอดขายเรียบร้อยแล้ว`, 'success');
-  };
-
-  const handleDeleteSale = (saleId) => {
-    const targetSale = salesHistory.find(s => s.id === saleId);
-    if (!targetSale) return;
-
-    setSalesHistory(prev => prev.filter(s => s.id !== saleId));
-
-    setInventory(prev => prev.map(item => {
-      if (item.id === targetSale.productId) {
-        return { ...item, current_stock: item.current_stock + targetSale.qty };
-      }
-      return item;
-    }));
-
-    playSound('delete');
-    triggerToast(`ยกเลิกรายการขายสำเร็จ คืนสต็อกสินค้า +${targetSale.qty} ชิ้น`, 'info');
-  };
-
-  const handleExportData = () => {
-    const backupData = {
-      inventory,
-      salesHistory,
-      customers,
-      debtLogs,
-      exportDate: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `checkstock_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    triggerToast('ดาวน์โหลดสำรองข้อมูลเรียบร้อยแล้ว', 'success');
-  };
-
-  const handleImportData = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const imported = JSON.parse(e.target.result);
-        if (imported.inventory && Array.isArray(imported.inventory)) setInventory(imported.inventory);
-        if (imported.salesHistory && Array.isArray(imported.salesHistory)) setSalesHistory(imported.salesHistory);
-        if (imported.customers && Array.isArray(imported.customers)) setCustomers(imported.customers);
-        if (imported.debtLogs && Array.isArray(imported.debtLogs)) setDebtLogs(imported.debtLogs);
-        triggerToast('นำเข้าข้อมูลสำเร็จแล้ว!', 'success');
-      } catch (err) {
-        triggerToast('ไฟล์ข้อมูลไม่ถูกต้อง', 'error');
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  return (
-    <div className="flex flex-col h-screen bg-slate-100 font-sans relative overflow-hidden select-none">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-2xl shadow-2xl text-white font-medium flex items-center gap-2 animate-bounce ${
-          toastMessage.type === 'error' ? 'bg-red-600' : toastMessage.type === 'info' ? 'bg-sky-600' : 'bg-emerald-600'
-        }`}>
-          {toastMessage.type === 'error' ? <AlertCircle size={20} /> : <Check size={20} />}
-          <span>{toastMessage.msg}</span>
-        </div>
-      )}
-
-      {/* Main Top Header - เปลี่ยนชื่อเว็บเป็น เช็คสต็อกคงเหลือ */}
-      <header className="bg-emerald-700 text-white shadow-lg z-10 shrink-0">
-        <div className="p-2.5 md:p-4 flex justify-between items-center max-w-7xl mx-auto w-full">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-              <Package size={22} className="text-emerald-100" />
-            </div>
-            <div>
-              <h1 className="text-base md:text-xl font-black tracking-tight flex items-center gap-2">
-                เช็คสต็อกคงเหลือ <span className="bg-emerald-900 text-emerald-200 text-[10px] md:text-xs px-2 py-0.5 rounded-full font-normal">SYSTEM POS</span>
-              </h1>
-              <p className="text-[11px] text-emerald-100/80 hidden md:block">ระบบขายหน้าร้าน เช็คสต็อก สมุดเซ็นหนี้ & รายงานยอดขาย</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button onClick={handleExportData} title="สำรองข้อมูล" className="p-2 bg-emerald-800/80 hover:bg-emerald-800 rounded-xl text-xs font-medium flex items-center gap-1 transition border border-emerald-600">
-              <Download size={16} />
-              <span className="hidden md:inline">สำรองข้อมูล</span>
-            </button>
-            <label title="นำเข้าข้อมูล" className="p-2 bg-emerald-800/80 hover:bg-emerald-800 rounded-xl text-xs font-medium flex items-center gap-1 transition border border-emerald-600 cursor-pointer">
-              <Upload size={16} />
-              <span className="hidden md:inline">นำเข้า</span>
-              <input type="file" accept=".json" onChange={handleImportData} className="hidden" />
-            </label>
-
-            {lowStockItems.length > 0 && (
-              <div 
-                onClick={() => setActiveTab('inventory')}
-                className="flex items-center gap-1.5 bg-rose-500 text-white px-2.5 py-1.5 rounded-full text-xs font-bold animate-pulse cursor-pointer shadow-md hover:bg-rose-600 transition"
-              >
-                <AlertTriangle size={15} />
-                <span className="hidden md:inline">สินค้าใกล้หมด {lowStockItems.length} รายการ</span>
-                <span className="md:hidden">{lowStockItems.length}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Main View Container */}
-      <main className="flex-1 overflow-hidden max-w-7xl mx-auto w-full flex flex-col">
-        {activeTab === 'pos' && (
-          <POSView 
-            inventory={inventory} 
-            setInventory={setInventory} 
-            salesHistory={salesHistory} 
-            setSalesHistory={setSalesHistory}
-            customers={customers}
-            setCustomers={setCustomers}
-            debtLogs={debtLogs}
-            setDebtLogs={setDebtLogs}
-            triggerToast={triggerToast}
-            setLastReceipt={setLastReceipt}
-          />
-        )}
-        {activeTab === 'inventory' && (
-          <InventoryView 
-            inventory={inventory} 
-            setInventory={setInventory} 
-            lowStockItems={lowStockItems}
-            triggerToast={triggerToast}
-          />
-        )}
-        {activeTab === 'debts' && (
-          <DebtTrackerView 
-            customers={customers} 
-            setCustomers={setCustomers}
-            debtLogs={debtLogs}
-            setDebtLogs={setDebtLogs}
-            triggerToast={triggerToast}
-          />
-        )}
-        {activeTab === 'history' && (
-          <SalesHistoryView 
-            salesHistory={salesHistory}
-            onEditSale={handleEditSale}
-            onDeleteSale={handleDeleteSale}
-          />
-        )}
-        {activeTab === 'dashboard' && (
-          <DashboardView 
-            inventory={inventory} 
-            salesHistory={salesHistory} 
-            customers={customers}
-          />
-        )}
-      </main>
-
-      {/* Receipt Modal */}
-      {lastReceipt && (
-        <ReceiptModal 
-          receipt={lastReceipt} 
-          onClose={() => setLastReceipt(null)} 
-        />
-      )}
-
-      {/* Bottom Navigation */}
-      <nav className="bg-white border-t border-slate-200 shadow-2xl z-20 shrink-0">
-        <div className="flex justify-around max-w-lg mx-auto py-1">
-          <NavButton 
-            icon={<ShoppingCart size={22} />} 
-            label="ขายหน้าร้าน" 
-            isActive={activeTab === 'pos'} 
-            onClick={() => setActiveTab('pos')} 
-          />
-          <NavButton 
-            icon={<Package size={22} />} 
-            label="คลังสินค้า" 
-            isActive={activeTab === 'inventory'} 
-            onClick={() => setActiveTab('inventory')} 
-            badge={lowStockItems.length}
-          />
-          <NavButton 
-            icon={<BookOpen size={22} />} 
-            label="สมุดเซ็นหนี้" 
-            isActive={activeTab === 'debts'} 
-            onClick={() => setActiveTab('debts')} 
-            badge={customers.filter(c => c.balance > 0).length}
-            badgeColor="bg-amber-500"
-          />
-          <NavButton 
-            icon={<History size={22} />} 
-            label="ประวัติขาย" 
-            isActive={activeTab === 'history'} 
-            onClick={() => setActiveTab('history')} 
-          />
-          <NavButton 
-            icon={<BarChart2 size={22} />} 
-            label="ยอดขาย" 
-            isActive={activeTab === 'dashboard'} 
-            onClick={() => setActiveTab('dashboard')} 
-          />
-        </div>
-      </nav>
-    </div>
-  );
-}
-
-function NavButton({ icon, label, isActive, onClick, badge, badgeColor = 'bg-rose-500' }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center py-2 px-3 rounded-2xl relative transition-all duration-200 ${
-        isActive ? 'text-emerald-700 font-bold bg-emerald-50 scale-105' : 'text-slate-500 hover:text-slate-800'
-      }`}
-    >
-      <div className="relative">
-        {icon}
-        {badge > 0 && (
-          <span className={`absolute -top-1.5 -right-2.5 ${badgeColor} text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow-sm`}>
-            {badge}
-          </span>
-        )}
-      </div>
-      <span className="text-[11px] mt-1">{label}</span>
-    </button>
-  );
-}
-
-/* ====================================================================
-   VIEW 1: POSView - ฝังรูป QR Code สแกนจ่ายจริง & บันทึกประวัติคนติดหนี้
-   ==================================================================== */
-function POSView({ inventory, setInventory, salesHistory, setSalesHistory, customers, setCustomers, debtLogs, setDebtLogs, triggerToast, setLastReceipt }) {
-  const [cart, setCart] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('ทั้งหมด');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [paymentType, setPaymentType] = useState('cash'); // cash, qr, credit
-  const [cashReceived, setCashReceived] = useState('');
-  const [selectedCustomerForCredit, setSelectedCustomerForCredit] = useState('');
-  const [barcodeInput, setBarcodeInput] = useState('');
-  const [mobileTab, setMobileTab] = useState('products'); // 'products' or 'cart'
-
-  const categories = useMemo(() => {
-    return ['ทั้งหมด', ...new Set(inventory.map(i => i.category))];
-  }, [inventory]);
-
-  const filteredProducts = useMemo(() => {
-    return inventory.filter(item => {
-      const matchCat = selectedCategory === 'ทั้งหมด' || item.category === selectedCategory;
-      const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (item.barcode && item.barcode.includes(searchTerm));
-      return matchCat && matchSearch;
-    });
-  }, [inventory, selectedCategory, searchTerm]);
-
-  const cartSummary = useMemo(() => {
-    const totalRevenue = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const totalCost = cart.reduce((sum, item) => sum + (item.cost_price * item.qty), 0);
-    const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-    return { totalRevenue, totalCost, profit: totalRevenue - totalCost, totalItems };
+  // คำนวณยอดรวมตะกร้า
+  const cartTotal = useMemo(() => {
+    return cart.reduce((sum, item) => sum + (item.selling_price * item.qty), 0);
   }, [cart]);
 
-  const addToCart = (product, isPack = false) => {
-    const qtyToAdd = isPack ? (product.pack_size || 1) : 1;
-    const price = isPack && product.pack_price ? (product.pack_price / product.pack_size) : product.selling_price;
-    const displayName = isPack ? `${product.name} (ยกแพ็ค/ลัง)` : product.name;
-
-    if (product.current_stock < qtyToAdd) {
-      triggerToast(`สินค้า "${product.name}" มีสต็อกไม่พอ (เหลือ ${product.current_stock} ชิ้น)`, 'error');
+  const addToCart = (product) => {
+    if (product.current_stock <= 0) {
+      showAlert('สินค้าหมด', `สินค้า "${product.name}" ในคลังหมดแล้ว`);
       return;
     }
-
     setCart(prev => {
-      const existing = prev.find(i => i.id === product.id && i.isPack === isPack);
+      const existing = prev.find(item => item.id === product.id);
       if (existing) {
-        if (product.current_stock < (existing.qty + qtyToAdd)) {
-          triggerToast(`สต็อกไม่พอสำหรับเพิ่มจำนวน`, 'error');
+        if (existing.qty >= product.current_stock) {
+          showAlert('สต็อกไม่พอ', `มีสินค้าอยู่ในคลังเพียง ${product.current_stock} ชิ้น`);
           return prev;
         }
-        return prev.map(i => i.id === product.id && i.isPack === isPack ? { ...i, qty: i.qty + qtyToAdd } : i);
+        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
       }
-      return [...prev, {
-        id: product.id,
-        name: displayName,
-        rawName: product.name,
-        price: price,
-        cost_price: product.cost_price,
-        qty: qtyToAdd,
-        isPack: isPack
-      }];
+      return [...prev, { ...product, qty: 1 }];
     });
-
-    playSound('scan');
   };
 
-  const updateCartQty = (id, isPack, newQty) => {
-    const targetProd = inventory.find(p => p.id === id);
-    if (newQty > targetProd.current_stock) {
-      triggerToast(`สต็อกคงเหลือเพียง ${targetProd.current_stock} ชิ้น`, 'error');
-      return;
-    }
-    if (newQty <= 0) {
-      removeFromCart(id, isPack);
-      return;
-    }
-    setCart(prev => prev.map(item => item.id === id && item.isPack === isPack ? { ...item, qty: newQty } : item));
-  };
-
-  const removeFromCart = (id, isPack) => {
-    setCart(prev => prev.filter(item => !(item.id === id && item.isPack === isPack)));
-    playSound('delete');
-  };
-
-  const handleBarcodeSubmit = (e) => {
-    e.preventDefault();
-    if (!barcodeInput.trim()) return;
-    const matched = inventory.find(i => i.barcode === barcodeInput.trim());
-    if (matched) {
-      addToCart(matched, false);
-      setBarcodeInput('');
-    } else {
-      triggerToast('ไม่พบบาร์โค้ดสินค้านี้ในระบบ', 'error');
-    }
+  const updateCartQty = (id, delta) => {
+    setCart(prev => {
+      return prev.map(item => {
+        if (item.id === id) {
+          const product = products.find(p => p.id === id);
+          const newQty = item.qty + delta;
+          if (newQty <= 0) return null;
+          if (product && newQty > product.current_stock) {
+            showAlert('สต็อกไม่พอ', `มีสินค้าอยู่ในคลังเพียง ${product.current_stock} ชิ้น`);
+            return item;
+          }
+          return { ...item, qty: newQty };
+        }
+        return item;
+      }).filter(Boolean);
+    });
   };
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
 
-    if (paymentType === 'cash') {
-      const cash = Number(cashReceived);
-      if (isNaN(cash) || cash < cartSummary.totalRevenue) {
-        triggerToast('กรุณาระบุจำนวนเงินสดให้ถูกต้องและครบถ้วน', 'error');
-        return;
-      }
-    } else if (paymentType === 'credit') {
-      if (!selectedCustomerForCredit) {
-        triggerToast('กรุณาเลือกชื่อลูกค้าที่จะลงสมุดเซ็นหนี้', 'error');
+    if (paymentMethod === 'cash') {
+      const received = parseFloat(cashReceived) || 0;
+      if (received < cartTotal) {
+        showAlert('จำนวนเงินไม่พอ', 'เงินสดที่รับมาน้อยกว่ายอดชำระ');
         return;
       }
     }
 
-    const newSaleId = 'SALE-' + Date.now();
-    const timestamp = new Date().toISOString();
+    if (paymentMethod === 'debt' && !debtorName.trim()) {
+      showAlert('กรุณากรอกชื่อ', 'กรุณาระบุชื่อผู้ติดหนี้');
+      return;
+    }
 
-    const newSalesRecords = cart.map(item => ({
-      id: newSaleId + '-' + item.id + (item.isPack ? '-pack' : ''),
-      billId: newSaleId,
-      productId: item.id,
-      productName: item.name,
-      qty: item.qty,
-      revenue: item.price * item.qty,
-      cost: item.cost_price * item.qty,
-      profit: (item.price * item.qty) - (item.cost_price * item.qty),
-      paymentType,
-      timestamp
-    }));
-
-    setSalesHistory(prev => [...prev, ...newSalesRecords]);
-
-    setInventory(prev => prev.map(item => {
-      const cartItem = cart.find(c => c.id === item.id);
+    // ตัดสต็อกสินค้า
+    const updatedProducts = products.map(p => {
+      const cartItem = cart.find(c => c.id === p.id);
       if (cartItem) {
-        return { ...item, current_stock: item.current_stock - cartItem.qty };
+        return { ...p, current_stock: Math.max(0, p.current_stock - cartItem.qty) };
       }
-      return item;
-    }));
+      return p;
+    });
 
-    // บันทึกการติดหนี้ลงสมุดเซ็น + ประวัติคนติดหนี้
-    if (paymentType === 'credit') {
-      const targetCustomer = customers.find(c => c.id === selectedCustomerForCredit);
-      
-      setCustomers(prev => prev.map(cust => {
-        if (cust.id === selectedCustomerForCredit) {
-          return { ...cust, balance: cust.balance + cartSummary.totalRevenue };
-        }
-        return cust;
-      }));
+    setProducts(updatedProducts);
 
-      // เพิ่มประวัติการติดหนี้ (Debt Log)
-      const newDebtLog = {
-        id: 'dlog-' + Date.now(),
-        customerId: selectedCustomerForCredit,
-        customerName: targetCustomer?.name || 'ลูกค้า',
-        type: 'credit', // 'credit' = ติดหนี้เพิ่ม, 'pay' = ชำระหนี้
-        amount: cartSummary.totalRevenue,
-        date: timestamp,
-        note: `เซ็นหนี้สินค้า ${cart.length} รายการ (บิล: ${newSaleId.slice(-6)})`
-      };
+    // คำนวณต้นทุนและกำไรบิลนี้
+    const totalCost = cart.reduce((sum, item) => sum + (item.cost_price * item.qty), 0);
+    const profit = cartTotal - totalCost;
 
-      setDebtLogs(prev => [newDebtLog, ...prev]);
-    }
-
-    const receiptObj = {
-      id: newSaleId,
-      timestamp,
-      items: [...cart],
-      total: cartSummary.totalRevenue,
-      paymentType,
-      cashReceived: paymentType === 'cash' ? Number(cashReceived) : cartSummary.totalRevenue,
-      change: paymentType === 'cash' ? Number(cashReceived) - cartSummary.totalRevenue : 0,
-      customerName: paymentType === 'credit' ? customers.find(c => c.id === selectedCustomerForCredit)?.name : ''
+    const newSale = {
+      id: 'BILL-' + Date.now(),
+      date: new Date().toISOString(),
+      items: cart,
+      total_amount: cartTotal,
+      total_cost: totalCost,
+      profit: profit,
+      payment_method: paymentMethod,
+      cash_received: paymentMethod === 'cash' ? parseFloat(cashReceived) : cartTotal,
+      change: paymentMethod === 'cash' ? (parseFloat(cashReceived) - cartTotal) : 0,
+      debtor_name: paymentMethod === 'debt' ? debtorName.trim() : null
     };
 
-    playSound('success');
-    triggerToast(paymentType === 'credit' ? 'บันทึกยอดลงสมุดเซ็นและเก็บประวัติแล้ว!' : 'ชำระเงินสำเร็จ!', 'success');
-    
+    setSalesHistory([newSale, ...salesHistory]);
+
+    // บันทึกลงสมุดหนี้ถ้าเลือกติดหนี้
+    if (paymentMethod === 'debt') {
+      const debtor = debtors.find(d => d.name.toLowerCase() === debtorName.trim().toLowerCase());
+      if (debtor) {
+        setDebtors(debtors.map(d => d.id === debtor.id ? { ...d, total_debt: d.total_debt + cartTotal, status: 'unpaid' } : d));
+      } else {
+        setDebtors([...debtors, {
+          id: 'DEBT-' + Date.now(),
+          name: debtorName.trim(),
+          total_debt: cartTotal,
+          status: 'unpaid',
+          createdAt: new Date().toISOString()
+        }]);
+      }
+    }
+
+    // รีเซ็ตค่า
     setCart([]);
-    setPaymentModalOpen(false);
+    setIsCheckoutOpen(false);
     setCashReceived('');
-    setMobileTab('products');
-    setLastReceipt(receiptObj);
+    setDebtorName('');
+    showAlert('บันทึกการขายสำเร็จ', 'ทำรายการขายและตัดสต็อกเรียบร้อยแล้ว');
   };
 
+  const requestPassword = (title, action) => {
+    setPasswordModal({ isOpen: true, title, action });
+    setPasswordInput('');
+  };
+
+  const verifyPassword = () => {
+    if (passwordInput === adminPassword) {
+      if (passwordModal.action) passwordModal.action();
+      setPasswordModal({ isOpen: false, title: '', action: null });
+      setPasswordInput('');
+    } else {
+      showAlert('รหัสผ่านไม่ถูกต้อง', 'กรุณาลองใหม่อีกครั้ง (รหัสเริ่มต้นคือ 4497)');
+    }
+  };
+
+  const handleDeleteProduct = (productId) => {
+    requestPassword('ยืนยันการลบสินค้า', () => {
+      setProducts(products.filter(p => p.id !== productId));
+      showAlert('สำเร็จ', 'ลบสินค้าเรียบร้อยแล้ว');
+    });
+  };
+
+  const handleRestockPack = () => {
+    if (!restockProduct) return;
+    const packs = parseInt(restockData.packs) || 0;
+    const piecesPerPack = parseInt(restockData.piecesPerPack) || 1;
+    const pricePerPack = parseFloat(restockData.pricePerPack) || 0;
+
+    if (packs <= 0 || pricePerPack <= 0) {
+      showAlert('ข้อมูลไม่ถูกต้อง', 'กรุณากรอกจำนวนแพ็คและราคาให้ถูกต้อง');
+      return;
+    }
+
+    const totalNewPieces = packs * piecesPerPack;
+    const newCostPerPiece = pricePerPack / piecesPerPack;
+
+    setProducts(products.map(p => {
+      if (p.id === restockProduct.id) {
+        return {
+          ...p,
+          current_stock: p.current_stock + totalNewPieces,
+          cost_price: Math.round(newCostPerPiece * 100) / 100 // ปรับต้นทุนเฉลี่ย
+        };
+      }
+      return p;
+    }));
+
+    setRestockProduct(null);
+    setRestockData({ packs: 1, piecesPerPack: 12, pricePerPack: '' });
+    showAlert('บันทึกสำเร็จ', `เพิ่มสต็อก ${restockProduct.name} จำนวน ${totalNewPieces} ชิ้นเรียบร้อยแล้ว`);
+  };
+
+  const handleSaveBulkProducts = () => {
+    const validItems = bulkItems.filter(item => item.name.trim() !== '');
+    if (validItems.length === 0) {
+      showAlert('ข้อมูลว่างเปล่า', 'กรุณากรอกชื่อสินค้าอย่างน้อย 1 รายการ');
+      return;
+    }
+
+    const newProducts = validItems.map((item, idx) => ({
+      id: 'PROD-' + (Date.now() + idx),
+      name: item.name.trim(),
+      category: item.category,
+      cost_price: parseFloat(item.cost_price) || 0,
+      selling_price: parseFloat(item.selling_price) || 0,
+      current_stock: parseInt(item.current_stock) || 0,
+      min_stock_alert: parseInt(item.min_stock_alert) || 5
+    }));
+
+    setProducts([...products, ...newProducts]);
+    setIsBulkAddOpen(false);
+    setBulkItems([{ name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }]);
+    showAlert('สำเร็จ', `เพิ่มสินค้าใหม่ ${newProducts.length} รายการเรียบร้อยแล้ว`);
+  };
+
+  const handleDeleteBill = (billId) => {
+    requestPassword('ยืนยันการลบบิลขาย', () => {
+      const bill = salesHistory.find(b => b.id === billId);
+      if (bill) {
+        // คืนสินค้าเข้าคลัง
+        const restoredProducts = products.map(p => {
+          const item = bill.items.find(i => i.id === p.id);
+          if (item) {
+            return { ...p, current_stock: p.current_stock + item.qty };
+          }
+          return p;
+        });
+        setProducts(restoredProducts);
+        setSalesHistory(salesHistory.filter(b => b.id !== billId));
+        showAlert('สำเร็จ', 'ลบบิลและคืนสต็อกสินค้าเข้าคลังเรียบร้อยแล้ว');
+      }
+    });
+  };
+
+  const handleMarkDebtPaid = (debtorId) => {
+    setDebtors(debtors.map(d => {
+      if (d.id === debtorId) {
+        return { ...d, status: 'paid', paidAt: new Date().toISOString() };
+      }
+      return d;
+    }));
+    showAlert('ชำระหนี้แล้ว', 'อัปเดตสถานะเป็น "ชำระเงินหรือหนี้แล้ว" เรียบร้อยแล้ว');
+  };
+
+  const handleDeleteDebtor = (debtorId) => {
+    requestPassword('ยืนยันการลบรายชื่อติดหนี้', () => {
+      setDebtors(debtors.filter(d => d.id !== debtorId));
+      showAlert('สำเร็จ', 'ลบรายการติดหนี้เรียบร้อยแล้ว');
+    });
+  };
+
+  const handleExportData = () => {
+    try {
+      const fullData = {
+        products,
+        salesHistory,
+        debtors,
+        adminPassword,
+        qrCodeImage,
+        backupDate: new Date().toISOString()
+      };
+      const jsonStr = JSON.stringify(fullData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Grocery_Backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      showAlert('สำรองข้อมูลสำเร็จ', 'ดาวน์โหลดไฟล์ข้อมูลสำรองเรียบร้อยแล้ว');
+    } catch (err) {
+      showAlert('ผิดพลาด', 'ไม่สามารถส่งออกข้อมูลได้');
+    }
+  };
+
+  const fileInputRef = useRef(null);
+  const handleImportData = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (imported.products) setProducts(imported.products);
+        if (imported.salesHistory) setSalesHistory(imported.salesHistory);
+        if (imported.debtors) setDebtors(imported.debtors);
+        if (imported.adminPassword) setAdminPassword(imported.adminPassword);
+        if (imported.qrCodeImage) setQrCodeImage(imported.qrCodeImage);
+
+        showAlert('กู้คืนข้อมูลสำเร็จ', 'นำเข้าข้อมูลทั้งหมดเข้าสู่ระบบเรียบร้อยแล้ว');
+        setIsSettingsOpen(false);
+      } catch (err) {
+        showAlert('ไฟล์ไม่ถูกต้อง', 'ไม่สามารถอ่านไฟล์ JSON ได้');
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const totalInventoryCost = useMemo(() => {
+    return products.reduce((sum, p) => sum + (p.cost_price * p.current_stock), 0);
+  }, [products]);
+
+  const expectedProfit = useMemo(() => {
+    return products.reduce((sum, p) => sum + ((p.selling_price - p.cost_price) * p.current_stock), 0);
+  }, [products]);
+
+  // สถิติสินค้าขายดี และ ขายไม่ค่อยดี (คำนวณจากยอดขายจริง)
+  const productPerformance = useMemo(() => {
+    const salesCount = {};
+    salesHistory.forEach(bill => {
+      bill.items.forEach(item => {
+        salesCount[item.id] = (salesCount[item.id] || 0) + item.qty;
+      });
+    });
+
+    const list = products.map(p => ({
+      ...p,
+      soldQty: salesCount[p.id] || 0
+    }));
+
+    const sortedBest = [...list].sort((a, b) => b.soldQty - a.soldQty);
+    const sortedSlow = [...list].sort((a, b) => a.soldQty - b.soldQty);
+
+    return {
+      bestSellers: sortedBest.filter(p => p.soldQty > 0).slice(0, 5),
+      slowMovers: sortedSlow.slice(0, 5)
+    };
+  }, [products, salesHistory]);
+
+  const categories = ['ทั้งหมด', 'เครื่องดื่มแอลกอฮอล์', 'บุหรี่/ไฟแช็ก', 'เครื่องดื่มชูกำลัง/กาแฟ'];
+
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'ทั้งหมด' || p.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
-    <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden bg-slate-100 relative">
-      {/* Mobile Tab Switcher Bar */}
-      <div className="md:hidden flex bg-slate-200 p-1 border-b shrink-0">
-        <button 
-          onClick={() => setMobileTab('products')}
-          className={`flex-1 py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
-            mobileTab === 'products' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600'
-          }`}
-        >
-          <Package size={16} /> เลือกสินค้า
-        </button>
-        <button 
-          onClick={() => setMobileTab('cart')}
-          className={`flex-1 py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 relative transition ${
-            mobileTab === 'cart' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600'
-          }`}
-        >
-          <ShoppingCart size={16} /> ตะกร้าคิดเงิน
-          {cartSummary.totalItems > 0 && (
-            <span className="bg-rose-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black">
-              {cartSummary.totalItems}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* ฝั่งเลือกสินค้า ( Products Section ) */}
-      <div className={`flex-1 flex flex-col h-full overflow-hidden border-r border-slate-200 ${
-        mobileTab === 'cart' ? 'hidden md:flex' : 'flex'
-      }`}>
-        <div className="p-3 bg-white border-b border-slate-200 shadow-sm flex flex-col gap-2 shrink-0">
-          <div className="flex gap-2">
-            <div className="flex-1 flex items-center bg-slate-100 rounded-xl px-3 py-2 border border-slate-200">
-              <Search size={18} className="text-slate-400 mr-2 shrink-0" />
-              <input 
-                type="text" 
-                placeholder="ค้นหาชื่อสินค้า..." 
-                value={searchTerm} 
-                onChange={e => setSearchTerm(e.target.value)}
-                className="bg-transparent w-full text-xs md:text-sm outline-none text-slate-800"
-              />
-              {searchTerm && <button onClick={() => setSearchTerm('')} className="text-slate-400">✕</button>}
+    <div className="min-h-screen bg-pink-50 text-gray-800 font-sans pb-16">
+      
+      {/* Top Fixed Navigation Bar */}
+      <header className="fixed top-0 left-0 right-0 bg-white border-b-2 border-pink-200 shadow-md z-40">
+        <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-pink-500 text-white p-2 rounded-xl shadow">
+              <ShoppingCart className="h-6 w-6" />
             </div>
-
-            <form onSubmit={handleBarcodeSubmit} className="hidden sm:flex items-center bg-slate-100 rounded-xl px-3 py-2 border border-slate-200 w-48">
-              <Camera size={18} className="text-emerald-600 mr-2 shrink-0" />
-              <input 
-                type="text" 
-                placeholder="สแกนบาร์โค้ด..." 
-                value={barcodeInput} 
-                onChange={e => setBarcodeInput(e.target.value)}
-                className="bg-transparent w-full text-xs outline-none"
-              />
-            </form>
-          </div>
-
-          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === cat 
-                    ? 'bg-emerald-600 text-white shadow-md' 
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Product Cards Grid */}
-        <div className="flex-1 overflow-y-auto p-2.5 md:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-2.5 align-content-start">
-          {filteredProducts.map(product => {
-            const isLowStock = product.current_stock <= product.min_stock_alert;
-            const isOut = product.current_stock <= 0;
-
-            return (
-              <div 
-                key={product.id}
-                className={`bg-white rounded-2xl p-2.5 md:p-3 border shadow-sm flex flex-col justify-between relative transition-all duration-150 ${
-                  isOut ? 'opacity-50 border-rose-200 bg-rose-50/20' : 'hover:shadow-md border-slate-200 hover:border-emerald-300'
-                }`}
-              >
-                <div>
-                  <div className="flex justify-between items-start gap-1 mb-1">
-                    <span className="text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 truncate max-w-[80px]">
-                      {product.category}
-                    </span>
-                    <span className={`text-[10px] md:text-[11px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${
-                      isOut ? 'bg-rose-100 text-rose-700' : isLowStock ? 'bg-amber-100 text-amber-700' : 'bg-emerald-50 text-emerald-700'
-                    }`}>
-                      เหลือ {product.current_stock}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-slate-800 text-xs md:text-sm line-clamp-2 leading-tight mb-1">
-                    {product.name}
-                  </h3>
-                </div>
-
-                <div className="mt-2">
-                  <div className="text-sm md:text-base font-extrabold text-emerald-600 mb-2">
-                    ฿{product.selling_price}
-                  </div>
-
-                  <div className="flex gap-1">
-                    <button 
-                      disabled={isOut}
-                      onClick={() => addToCart(product, false)}
-                      className={`flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition active:scale-95 ${
-                        isOut ? 'bg-slate-200 text-slate-400' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
-                      }`}
-                    >
-                      <Plus size={14} /> ใส่ตะกร้า
-                    </button>
-
-                    {product.pack_size && product.pack_price && (
-                      <button 
-                        disabled={isOut}
-                        onClick={() => addToCart(product, true)}
-                        title={`ยกแพ็ค/ลัง (${product.pack_size} ชิ้น) ฿${product.pack_price}`}
-                        className="px-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-[10px] font-bold transition active:scale-95 shrink-0"
-                      >
-                        ลัง
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {cartSummary.totalItems > 0 && mobileTab === 'products' && (
-          <div className="md:hidden p-2.5 bg-emerald-900/90 backdrop-blur-md text-white border-t flex justify-between items-center shadow-2xl shrink-0">
             <div>
-              <p className="text-[10px] text-emerald-200">ตะกร้าสินค้า ({cartSummary.totalItems} ชิ้น)</p>
-              <p className="text-base font-black text-white">฿{cartSummary.totalRevenue.toLocaleString()}</p>
+              <h1 className="text-lg font-black text-pink-600 leading-tight">ร้านของชำพาสเทล</h1>
+              <p className="text-xs text-pink-400 font-bold">ระบบสต็อก & POS หน้าร้าน</p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Low stock Notification Bell */}
             <button 
-              onClick={() => setMobileTab('cart')}
-              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-4 py-2 rounded-xl font-black text-xs flex items-center gap-1 shadow-lg"
+              onClick={() => setIsLowStockModalOpen(true)}
+              className="relative p-2 rounded-xl bg-pink-100 text-pink-700 hover:bg-pink-200 transition"
+              title="สินค้าใกล้หมด"
             >
-              ดูตะกร้า/คิดเงิน <ShoppingCart size={16} />
+              <Bell className="h-5 w-5" />
+              {lowStockItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-black px-1.5 py-0.5 rounded-full animate-bounce">
+                  {lowStockItems.length}
+                </span>
+              )}
+            </button>
+
+            {/* Settings button */}
+            <button 
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="ตั้งค่า"
+            >
+              <Settings className="h-5 w-5" />
             </button>
           </div>
-        )}
-      </div>
-
-      {/* ฝั่งตะกร้าสินค้า ( Cart Section ) */}
-      <div className={`w-full md:w-80 lg:w-96 bg-white border-l border-slate-200 flex-col h-full shadow-lg ${
-        mobileTab === 'products' ? 'hidden md:flex' : 'flex'
-      }`}>
-        <div className="p-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
-          <h2 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
-            <ShoppingCart size={18} className="text-emerald-600" />
-            รายการที่เลือก ({cartSummary.totalItems})
-          </h2>
-          {cart.length > 0 && (
-            <button onClick={() => setCart([])} className="text-xs text-rose-500 hover:underline">
-              ล้างตะกร้า
-            </button>
-          )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 divide-y divide-slate-100">
-          {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
-              <ShoppingCart size={48} className="mb-2 opacity-20" />
-              <p className="text-sm font-semibold">ยังไม่มีสินค้าในตะกร้า</p>
-              <p className="text-xs text-slate-400 mt-1">กดปุ่ม "+ ใส่ตะกร้า" จากรายการสินค้าเพื่อบันทึกขาย</p>
-            </div>
-          ) : (
-            cart.map(item => (
-              <div key={`${item.id}-${item.isPack}`} className="py-2.5 flex items-center justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-800 truncate">{item.name}</p>
-                  <p className="text-[11px] text-slate-500">฿{item.price} / ชิ้น</p>
-                </div>
-
-                <div className="flex items-center gap-1.5 bg-slate-100 rounded-xl p-1 border">
-                  <button onClick={() => updateCartQty(item.id, item.isPack, item.qty - 1)} className="p-1 hover:bg-slate-200 rounded-lg text-slate-600">
-                    <MinusCircle size={16} />
-                  </button>
-                  <span className="text-xs font-bold w-6 text-center">{item.qty}</span>
-                  <button onClick={() => updateCartQty(item.id, item.isPack, item.qty + 1)} className="p-1 hover:bg-slate-200 rounded-lg text-slate-600">
-                    <PlusCircle size={16} />
-                  </button>
-                </div>
-
-                <div className="text-right min-w-[50px]">
-                  <p className="text-xs font-extrabold text-slate-800">฿{(item.price * item.qty).toLocaleString()}</p>
-                  <button onClick={() => removeFromCart(item.id, item.isPack)} className="text-[10px] text-rose-500 hover:underline">
-                    ลบ
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="p-3.5 bg-slate-50 border-t border-slate-200 shadow-inner shrink-0">
-          <div className="space-y-1 mb-2.5">
-            <div className="flex justify-between text-xs text-slate-500">
-              <span>ทุนรวมประมาณ:</span>
-              <span>฿{cartSummary.totalCost.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-xs text-emerald-600 font-semibold">
-              <span>กำไรคาดการณ์:</span>
-              <span>+฿{cartSummary.profit.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-base md:text-lg font-black text-slate-800 border-t pt-1.5">
-              <span>ยอดรวมทั้งสิ้น:</span>
-              <span className="text-emerald-600">฿{cartSummary.totalRevenue.toLocaleString()}</span>
-            </div>
-          </div>
-
-          <button 
-            disabled={cart.length === 0}
-            onClick={() => { setPaymentModalOpen(true); setCashReceived(cartSummary.totalRevenue); }}
-            className={`w-full py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg transition ${
-              cart.length === 0 ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'
+        {/* Tab Navigation Buttons */}
+        <nav className="max-w-6xl mx-auto px-2 flex border-t border-pink-100 bg-pink-50/50 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('pos')}
+            className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-1.5 whitespace-nowrap border-b-2 transition ${
+              activeTab === 'pos' 
+                ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg' 
+                : 'border-transparent text-gray-600 hover:text-pink-500'
             }`}
           >
-            <Wallet size={18} /> ชำระเงิน / ลงสมุดเซ็น
+            <ShoppingCart className="h-4 w-4" /> ขายสินค้า
           </button>
-        </div>
-      </div>
 
-      {/* Payment Modal พร้อมรูป QR Code ของจริง */}
-      {paymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-5 md:p-6">
-            <div className="flex justify-between items-center mb-4 pb-2 border-b">
-              <h3 className="text-base md:text-lg font-black text-slate-800">ชำระเงิน ยอดรวม ฿{cartSummary.totalRevenue.toLocaleString()}</h3>
-              <button onClick={() => setPaymentModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
-            </div>
+          <button
+            onClick={() => setActiveTab('inventory')}
+            className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-1.5 whitespace-nowrap border-b-2 transition ${
+              activeTab === 'inventory' 
+                ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg' 
+                : 'border-transparent text-gray-600 hover:text-pink-500'
+            }`}
+          >
+            <Package className="h-4 w-4" /> คลังสินค้า ({products.length})
+          </button>
 
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              <button 
-                onClick={() => setPaymentType('cash')}
-                className={`py-2.5 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border transition ${
-                  paymentType === 'cash' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-slate-200 text-slate-600'
-                }`}
-              >
-                <DollarSign size={18} /> เงินสด
-              </button>
-              <button 
-                onClick={() => setPaymentType('qr')}
-                className={`py-2.5 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border transition ${
-                  paymentType === 'qr' ? 'bg-pink-50 border-pink-500 text-pink-700' : 'border-slate-200 text-slate-600'
-                }`}
-              >
-                <QrCode size={18} /> สแกน QR
-              </button>
-              <button 
-                onClick={() => setPaymentType('credit')}
-                className={`py-2.5 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border transition ${
-                  paymentType === 'credit' ? 'bg-amber-50 border-amber-500 text-amber-700' : 'border-slate-200 text-slate-600'
-                }`}
-              >
-                <BookOpen size={18} /> ลงสมุดเซ็น
-              </button>
-            </div>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-1.5 whitespace-nowrap border-b-2 transition ${
+              activeTab === 'history' 
+                ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg' 
+                : 'border-transparent text-gray-600 hover:text-pink-500'
+            }`}
+          >
+            <History className="h-4 w-4" /> ประวัติการขาย
+          </button>
 
-            {paymentType === 'cash' && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1">รับเงินสดมา (บาท)</label>
-                  <input 
-                    type="number" 
-                    value={cashReceived}
-                    onChange={e => setCashReceived(e.target.value)}
-                    className="w-full border-2 border-emerald-500 rounded-2xl p-3 text-2xl font-black text-center outline-none focus:ring-2 focus:ring-emerald-300"
-                    placeholder="0"
+          <button
+            onClick={() => setActiveTab('debtors')}
+            className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-1.5 whitespace-nowrap border-b-2 transition ${
+              activeTab === 'debtors' 
+                ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg' 
+                : 'border-transparent text-gray-600 hover:text-pink-500'
+            }`}
+          >
+            <BookOpen className="h-4 w-4" /> สมุดเซ็นหนี้
+          </button>
+        </nav>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="max-w-6xl mx-auto px-4 pt-28 pb-10">
+
+        {/* ================= TAB 1: POS / SALES ================= */}
+        {activeTab === 'pos' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Products List & Search */}
+            <div className="lg:col-span-2 space-y-4">
+              
+              {/* Search & Category Filter */}
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-pink-200 space-y-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="ค้นหาสินค้า (ชื่อ, ยี่ห้อ)..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-pink-400 font-bold bg-pink-50/30 text-gray-800"
                   />
                 </div>
 
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[cartSummary.totalRevenue, 100, 500, 1000].map(amt => (
-                    <button 
-                      key={amt} 
-                      onClick={() => setCashReceived(amt)}
-                      className="py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700"
+                {/* Category Pills */}
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setCategoryFilter(cat)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                        categoryFilter === cat 
+                          ? 'bg-pink-500 text-white shadow' 
+                          : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
+                      }`}
                     >
-                      {amt === cartSummary.totalRevenue ? 'พอดี' : `฿${amt}`}
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Products Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {filteredProducts.map(product => {
+                  const isLow = product.current_stock <= product.min_stock_alert;
+                  const isOut = product.current_stock <= 0;
+
+                  return (
+                    <button
+                      key={product.id}
+                      onClick={() => addToCart(product)}
+                      disabled={isOut}
+                      className={`p-3 rounded-2xl border-2 text-left transition transform active:scale-95 flex flex-col justify-between h-32 relative shadow-sm ${
+                        isOut 
+                          ? 'bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed' 
+                          : isLow 
+                          ? 'bg-amber-50 border-amber-300 hover:border-amber-400' 
+                          : 'bg-white border-pink-200 hover:border-pink-400'
+                      }`}
+                    >
+                      <div>
+                        <span className="text-[10px] font-bold text-gray-400 block truncate">{product.category}</span>
+                        <h3 className="font-bold text-sm text-gray-800 line-clamp-2 leading-tight">{product.name}</h3>
+                      </div>
+
+                      <div className="mt-auto flex items-end justify-between w-full">
+                        <div>
+                          <p className="text-xs text-gray-500">สต็อก: <span className={`font-black ${isLow ? 'text-amber-600' : 'text-gray-700'}`}>{product.current_stock}</span></p>
+                          <p className="text-base font-black text-pink-600">฿{product.selling_price}</p>
+                        </div>
+                        <div className="bg-pink-500 text-white p-1.5 rounded-lg">
+                          <Plus className="h-4 w-4" />
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Cart & Order Summary */}
+            <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-pink-200 flex flex-col h-fit sticky top-28">
+              <h2 className="text-lg font-black text-pink-700 border-b border-pink-100 pb-3 mb-3 flex items-center justify-between">
+                <span>รายการสั่งซื้อ</span>
+                <span className="text-xs bg-pink-100 text-pink-600 px-2.5 py-1 rounded-full">{cart.length} รายการ</span>
+              </h2>
+
+              {cart.length === 0 ? (
+                <div className="py-12 text-center text-gray-400">
+                  <ShoppingCart className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm font-bold">ยังไม่ได้เลือกสินค้า</p>
+                  <p className="text-xs">กดเลือกรายการสินค้าทางซ้ายมือ</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                  {cart.map(item => (
+                    <div key={item.id} className="flex items-center justify-between p-2 rounded-xl bg-pink-50 border border-pink-100">
+                      <div className="flex-1 pr-2">
+                        <h4 className="font-bold text-xs text-gray-800 truncate">{item.name}</h4>
+                        <p className="text-xs text-pink-600 font-bold">฿{item.selling_price} x {item.qty} = ฿{item.selling_price * item.qty}</p>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-white border border-pink-200 rounded-lg p-0.5">
+                        <button onClick={() => updateCartQty(item.id, -1)} className="px-2 py-0.5 font-bold text-gray-600 hover:bg-pink-100 rounded">-</button>
+                        <span className="px-2 font-black text-xs text-pink-600">{item.qty}</span>
+                        <button onClick={() => updateCartQty(item.id, 1)} className="px-2 py-0.5 font-bold text-gray-600 hover:bg-pink-100 rounded">+</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Total & Checkout Button */}
+              <div className="border-t-2 border-pink-100 pt-4 mt-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-gray-600">ราคารวมทั้งสิ้น:</span>
+                  <span className="text-2xl font-black text-pink-600">฿{cartTotal.toLocaleString()}</span>
+                </div>
+
+                <button
+                  onClick={() => setIsCheckoutOpen(true)}
+                  disabled={cart.length === 0}
+                  className={`w-full py-3 rounded-xl font-black text-white text-base shadow-md transition ${
+                    cart.length > 0 
+                      ? 'bg-pink-500 hover:bg-pink-600 active:scale-95' 
+                      : 'bg-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  บันทึกการขาย (ชำระเงิน)
+                </button>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ================= TAB 2: INVENTORY ================= */}
+        {activeTab === 'inventory' && (
+          <div className="space-y-6">
+            
+            {/* Inventory Financial Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-pink-200 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-gray-500">มูลค่าต้นทุนสินค้าในคลังรวม</p>
+                  <h3 className="text-2xl font-black text-pink-600">฿{totalInventoryCost.toLocaleString()}</h3>
+                </div>
+                <div className="bg-pink-100 p-3 rounded-xl text-pink-600">
+                  <Package className="h-8 w-8" />
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-green-200 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-green-600">กำไรที่คาดการณ์ (หากขายหมด)</p>
+                  <h3 className="text-2xl font-black text-green-600">฿{expectedProfit.toLocaleString()}</h3>
+                </div>
+                <div className="bg-green-100 p-3 rounded-xl text-green-600">
+                  <TrendingUp className="h-8 w-8" />
+                </div>
+              </div>
+            </div>
+
+            {/* Inventory Actions Bar */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-pink-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="ค้นหาในคลัง..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border-2 border-pink-200 rounded-xl text-sm font-bold bg-pink-50/30"
+                />
+              </div>
+
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => setIsBulkAddOpen(true)}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-pink-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1.5 shadow hover:bg-pink-600"
+                >
+                  <Plus className="h-4 w-4" /> เพิ่มสินค้า (หลายรายการ)
+                </button>
+              </div>
+            </div>
+
+            {/* Inventory List (Cards for Mobile) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredProducts.map(product => {
+                const isLow = product.current_stock <= product.min_stock_alert;
+
+                return (
+                  <div key={product.id} className="bg-white p-4 rounded-2xl border-2 border-pink-100 shadow-sm space-y-3 relative">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[10px] font-bold text-pink-500 bg-pink-50 px-2 py-0.5 rounded-full">{product.category}</span>
+                        <h3 className="font-bold text-gray-800 text-base mt-1">{product.name}</h3>
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setEditingProduct(product)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          title="แก้ไข"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+                          title="ลบ"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 bg-pink-50/50 p-2 rounded-xl text-center text-xs">
+                      <div>
+                        <p className="text-gray-400">ทุน</p>
+                        <p className="font-bold text-gray-700">฿{product.cost_price}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400">ราคาขาย</p>
+                        <p className="font-bold text-pink-600">฿{product.selling_price}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400">กำไร/ชิ้น</p>
+                        <p className="font-bold text-green-600">฿{product.selling_price - product.cost_price}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div>
+                        <span className="text-xs text-gray-500">คงเหลือ: </span>
+                        <span className={`text-base font-black ${isLow ? 'text-red-600' : 'text-gray-800'}`}>
+                          {product.current_stock} ชิ้น
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => setRestockProduct(product)}
+                        className="px-3 py-1.5 bg-green-500 text-white font-bold text-xs rounded-xl flex items-center gap-1 shadow hover:bg-green-600"
+                      >
+                        <Truck className="h-3.5 w-3.5" /> รับเข้า (แพ็ค)
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+        )}
+
+        {/* ================= TAB 3: SALES HISTORY & ANALYTICS ================= */}
+        {activeTab === 'history' && (
+          <div className="space-y-6">
+            
+            {/* Analytics Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              {/* Best Sellers */}
+              <div className="bg-white p-4 rounded-2xl border-2 border-pink-200 shadow-sm">
+                <h3 className="font-black text-pink-700 text-base mb-3 flex items-center gap-1.5">
+                  <TrendingUp className="h-5 w-5 text-green-500" /> สินค้าขายดี Top 5
+                </h3>
+                {productPerformance.bestSellers.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-4 text-center">ยังไม่มีข้อมูลการขาย</p>
+                ) : (
+                  <div className="space-y-2">
+                    {productPerformance.bestSellers.map((item, idx) => (
+                      <div key={item.id} className="flex justify-between items-center text-xs p-2 rounded-xl bg-green-50 border border-green-100">
+                        <span className="font-bold text-gray-800">{idx + 1}. {item.name}</span>
+                        <span className="font-black text-green-700">ขายได้ {item.soldQty} ชิ้น</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Slow Movers */}
+              <div className="bg-white p-4 rounded-2xl border-2 border-pink-200 shadow-sm">
+                <h3 className="font-black text-pink-700 text-base mb-3 flex items-center gap-1.5">
+                  <TrendingDown className="h-5 w-5 text-amber-500" /> สินค้าขายออกช้า (ควรระวัง)
+                </h3>
+                {productPerformance.slowMovers.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-4 text-center">ยังไม่มีข้อมูล</p>
+                ) : (
+                  <div className="space-y-2">
+                    {productPerformance.slowMovers.map((item, idx) => (
+                      <div key={item.id} className="flex justify-between items-center text-xs p-2 rounded-xl bg-amber-50 border border-amber-100">
+                        <span className="font-bold text-gray-800">{idx + 1}. {item.name}</span>
+                        <span className="font-bold text-amber-700">ขายได้ {item.soldQty} ชิ้น</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            {/* Sales Bills History List */}
+            <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="font-black text-gray-800 text-lg">ประวัติบิลการขายทั้งหมด</h3>
+                <span className="text-xs font-bold text-pink-600 bg-pink-100 px-3 py-1 rounded-full">
+                  {salesHistory.length} บิล
+                </span>
+              </div>
+
+              {salesHistory.length === 0 ? (
+                <p className="text-center py-12 text-gray-400 font-bold">ยังไม่มีประวัติการขาย</p>
+              ) : (
+                <div className="space-y-3">
+                  {salesHistory.map(bill => (
+                    <div key={bill.id} className="p-4 rounded-2xl border border-pink-100 bg-pink-50/30 space-y-3">
+                      <div className="flex justify-between items-start border-b border-pink-100 pb-2">
+                        <div>
+                          <span className="text-xs font-black text-pink-600">{bill.id}</span>
+                          <p className="text-[10px] text-gray-400">{new Date(bill.date).toLocaleString('th-TH')}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            bill.payment_method === 'cash' ? 'bg-green-100 text-green-700' :
+                            bill.payment_method === 'qr' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {bill.payment_method === 'cash' ? 'เงินสด' : bill.payment_method === 'qr' ? 'โอนเงิน' : `ติดหนี้ (${bill.debtor_name})`}
+                          </span>
+
+                          <button
+                            onClick={() => handleDeleteBill(bill.id)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded"
+                            title="ลบบิลและคืนสต็อก"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Items list in bill */}
+                      <div className="text-xs space-y-1">
+                        {bill.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-gray-700">
+                            <span>- {item.name} ({item.qty} ชิ้น)</span>
+                            <span className="font-bold">฿{item.selling_price * item.qty}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2 border-t border-pink-100 text-sm">
+                        <span className="text-xs text-gray-500">กำไรบิลนี้: <strong className="text-green-600">฿{bill.profit}</strong></span>
+                        <span className="font-black text-pink-600">ยอดรวม: ฿{bill.total_amount.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+
+        {/* ================= TAB 4: DEBTORS LEDGER ================= */}
+        {activeTab === 'debtors' && (
+          <div className="space-y-6">
+            
+            {/* QR Code Upload / Manage Section */}
+            <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <img src={qrCodeImage} alt="PromptPay QR" className="w-20 h-20 object-contain rounded-xl border-2 border-pink-200" />
+                <div>
+                  <h3 className="font-black text-gray-800 text-base">QR Code PromptPay ของร้าน</h3>
+                  <p className="text-xs text-gray-500">แสดงสำหรับลูกค้าโอนเงินหน้าร้าน</p>
+                </div>
+              </div>
+
+              <label className="cursor-pointer px-4 py-2 bg-pink-100 text-pink-700 font-bold text-xs rounded-xl hover:bg-pink-200 transition flex items-center gap-1.5">
+                <ImageIcon className="h-4 w-4" /> เปลี่ยนรูป QR Code
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setQrCodeImage(reader.result);
+                        showAlert('อัปเดตสำเร็จ', 'เปลี่ยนรูป QR Code เรียบร้อยแล้ว');
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+
+            {/* Debtors List */}
+            <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="font-black text-gray-800 text-lg">สมุดบันทึกคนติดหนี้ (เซ็นไว้)</h3>
+                <span className="text-xs font-bold text-pink-600 bg-pink-100 px-3 py-1 rounded-full">
+                  {debtors.length} รายชื่อ
+                </span>
+              </div>
+
+              {debtors.length === 0 ? (
+                <p className="text-center py-12 text-gray-400 font-bold">ไม่มีรายการคนติดหนี้</p>
+              ) : (
+                <div className="space-y-3">
+                  {debtors.map(debtor => {
+                    const isPaid = debtor.status === 'paid';
+
+                    return (
+                      <div 
+                        key={debtor.id} 
+                        className={`p-4 rounded-2xl border transition ${
+                          isPaid ? 'bg-green-50 border-green-200 opacity-80' : 'bg-pink-50/50 border-pink-200'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h4 className={`font-black text-base ${isPaid ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                              {debtor.name}
+                            </h4>
+                            <p className="text-xs text-gray-400">
+                              ยอดหนี้สะสม: <strong className={isPaid ? 'text-gray-500' : 'text-red-600'}>฿{debtor.total_debt.toLocaleString()}</strong>
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {isPaid ? (
+                              <span className="px-3 py-1 bg-green-500 text-white font-bold text-xs rounded-full flex items-center gap-1">
+                                <Check className="h-3.5 w-3.5" /> ชำระเงินหรือหนี้แล้ว
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleMarkDebtPaid(debtor.id)}
+                                className="px-3 py-1.5 bg-green-600 text-white font-bold text-xs rounded-xl shadow hover:bg-green-700"
+                              >
+                                ชำระหนี้แล้ว
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => handleDeleteDebtor(debtor.id)}
+                              className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                              title="ลบรายชื่อ"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+
+      </main>
+
+      {/* ================= MODALS & DIALOGS ================= */}
+
+      {/* 1. Checkout Payment Modal */}
+      {isCheckoutOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+              <h3 className="font-black text-lg text-pink-700">ชำระเงิน / เลือกการจ่ายเงิน</h3>
+              <button onClick={() => setIsCheckoutOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="text-center py-2 bg-pink-50 rounded-2xl">
+              <p className="text-xs text-gray-500">ยอดที่ต้องชำระทั้งสิ้น</p>
+              <h2 className="text-3xl font-black text-pink-600">฿{cartTotal.toLocaleString()}</h2>
+            </div>
+
+            {/* Payment Method Tabs */}
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => setPaymentMethod('cash')}
+                className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
+                  paymentMethod === 'cash' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
+                }`}
+              >
+                เงินสด
+              </button>
+              <button
+                onClick={() => setPaymentMethod('qr')}
+                className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
+                  paymentMethod === 'qr' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
+                }`}
+              >
+                สแกน QR
+              </button>
+              <button
+                onClick={() => setPaymentMethod('debt')}
+                className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
+                  paymentMethod === 'debt' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
+                }`}
+              >
+                เซ็นหนี้
+              </button>
+            </div>
+
+            {/* Cash Payment Details */}
+            {paymentMethod === 'cash' && (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">รับเงินสดมา (บาท)</label>
+                  <input
+                    type="number"
+                    value={cashReceived}
+                    onChange={(e) => setCashReceived(e.target.value)}
+                    placeholder="0"
+                    className="w-full p-3 border-2 border-pink-200 rounded-xl text-xl font-black text-center focus:outline-none focus:border-pink-500"
+                  />
+                </div>
+
+                {/* Quick Cash Buttons */}
+                <div className="flex gap-1.5 overflow-x-auto">
+                  {[cartTotal, 20, 50, 100, 500, 1000].map(val => (
+                    <button
+                      key={val}
+                      onClick={() => setCashReceived(val.toString())}
+                      className="px-2.5 py-1 bg-pink-100 text-pink-700 font-bold text-xs rounded-lg whitespace-nowrap hover:bg-pink-200"
+                    >
+                      {val === cartTotal ? 'พอดี' : `฿${val}`}
                     </button>
                   ))}
                 </div>
 
-                {Number(cashReceived) >= cartSummary.totalRevenue && (
-                  <div className="p-3 bg-emerald-50 rounded-2xl text-center">
-                    <p className="text-xs text-emerald-700 font-semibold">เงินทอน</p>
-                    <p className="text-2xl font-black text-emerald-600">
-                      ฿{(Number(cashReceived) - cartSummary.totalRevenue).toLocaleString()}
+                {parseFloat(cashReceived) >= cartTotal && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-center">
+                    <p className="text-xs text-gray-500">เงินทอน</p>
+                    <p className="text-xl font-black text-green-600">
+                      ฿{(parseFloat(cashReceived) - cartTotal).toLocaleString()}
                     </p>
                   </div>
                 )}
               </div>
             )}
 
-            {/* แสดงป๊อปอัป QR CODE จริงของ น.ส. ชวกร คำโสม */}
-            {paymentType === 'qr' && (
-              <div className="text-center p-4 bg-gradient-to-b from-pink-50 to-white rounded-3xl border-2 border-pink-200 space-y-3 shadow-inner">
-                <div className="bg-pink-500 text-white py-1 px-3 rounded-full text-[11px] font-bold inline-block shadow-sm">
-                  สแกนจ่ายผ่าน QR Code
-                </div>
+            {/* QR Payment Details */}
+            {paymentMethod === 'qr' && (
+              <div className="text-center space-y-2 py-2">
+                <img src={qrCodeImage} alt="QR Code" className="w-48 h-48 mx-auto object-contain rounded-2xl border-2 border-pink-200 shadow" />
+                <p className="text-xs font-bold text-gray-500">สแกนเพื่อโอนเงินเข้าบัญชีร้าน</p>
+              </div>
+            )}
 
-                <div className="w-48 h-48 bg-white border-2 border-pink-300 rounded-2xl mx-auto p-2 shadow-md flex items-center justify-center overflow-hidden">
-                  <QRCodeDisplay 
-                    amount={cartSummary.totalRevenue} 
-                    accountName="น.ส. ชวกร คำโสม" 
-                    accountNo="2051-250-837" 
+            {/* Debt Payment Details */}
+            {paymentMethod === 'debt' && (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">ชื่อผู้เซ็นหนี้</label>
+                  <input
+                    type="text"
+                    value={debtorName}
+                    onChange={(e) => setDebtorName(e.target.value)}
+                    placeholder="ระบุชื่อลูกหนี้..."
+                    className="w-full p-3 border-2 border-pink-200 rounded-xl font-bold focus:outline-none focus:border-pink-500"
                   />
                 </div>
-
-                <div className="bg-white p-2.5 rounded-2xl border border-pink-100 text-xs space-y-1 text-slate-700">
-                  <p className="font-bold text-pink-700">ชื่อบัญชี: น.ส. ชวกร คำโสม</p>
-                  <p className="font-semibold text-slate-600">เลขบัญชี: 2051-250-837</p>
-                  <p className="text-base font-black text-emerald-600 pt-1">ยอดโอน: ฿{cartSummary.totalRevenue.toLocaleString()}</p>
-                </div>
               </div>
             )}
 
-            {paymentType === 'credit' && (
-              <div className="space-y-3">
-                <label className="block text-xs font-bold text-slate-600">เลือกชื่อลูกหนี้ในสมุดเซ็น</label>
-                <select 
-                  value={selectedCustomerForCredit}
-                  onChange={e => setSelectedCustomerForCredit(e.target.value)}
-                  className="w-full border-2 border-amber-400 rounded-2xl p-3 text-xs font-bold bg-white outline-none"
-                >
-                  <option value="">-- เลือกรายชื่อลูกหนี้ --</option>
-                  {customers.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} (ค้างเดิม ฿{c.balance})
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl">
-                  💡 ยอดขาย ฿{cartSummary.totalRevenue.toLocaleString()} จะบันทึกเพิ่มในสมุดเซ็นและเก็บบันทึกประวัติคนติดหนี้
-                </p>
-              </div>
-            )}
-
-            <button 
+            <button
               onClick={handleCheckout}
-              className="w-full mt-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-lg transition active:scale-95 text-sm"
+              className="w-full py-3 bg-pink-500 text-white font-black text-base rounded-xl shadow-md hover:bg-pink-600"
             >
-              ยืนยันทำรายการ
+              ยืนยันการรับชำระเงิน
             </button>
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-function InventoryView({ inventory, setInventory, lowStockItems, triggerToast }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [editingItem, setEditingItem] = useState(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
-
-  const filteredInventory = useMemo(() => {
-    return inventory.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [inventory, searchTerm]);
-
-  const stockAnalytics = useMemo(() => {
-    const totalCostValue = inventory.reduce((sum, item) => sum + (item.cost_price * item.current_stock), 0);
-    const totalSalesValue = inventory.reduce((sum, item) => sum + (item.selling_price * item.current_stock), 0);
-    return {
-      totalCostValue,
-      totalSalesValue,
-      expectedProfit: totalSalesValue - totalCostValue
-    };
-  }, [inventory]);
-
-  const handleQuickStockChange = (id, delta) => {
-    setInventory(prev => prev.map(item => {
-      if (item.id === id) {
-        const updated = Math.max(0, item.current_stock + delta);
-        return { ...item, current_stock: updated };
-      }
-      return item;
-    }));
-    triggerToast('ปรับจำนวนสต็อกเรียบร้อยแล้ว', 'info');
-  };
-
-  const handleSaveProduct = (formData) => {
-    if (editingItem) {
-      setInventory(prev => prev.map(item => item.id === editingItem.id ? { ...formData, id: item.id } : item));
-      triggerToast('แก้ไขข้อมูลสินค้าเรียบร้อยแล้ว', 'success');
-    } else {
-      const newItem = { ...formData, id: Date.now().toString() };
-      setInventory(prev => [...prev, newItem]);
-      triggerToast('เพิ่มสินค้าใหม่เรียบร้อยแล้ว', 'success');
-    }
-    setEditingItem(null);
-    setIsAddModalOpen(false);
-  };
-
-  const handleDeleteProduct = () => {
-    if (itemToDelete) {
-      setInventory(prev => prev.filter(item => item.id !== itemToDelete.id));
-      setItemToDelete(null);
-      playSound('delete');
-      triggerToast('ลบสินค้าออกจากคลังเรียบร้อยแล้ว', 'info');
-    }
-  };
-
-  return (
-    <div className="flex-1 flex flex-col h-full bg-slate-100 p-2.5 md:p-4 overflow-hidden">
-      <div className="grid grid-cols-3 gap-2 mb-3 shrink-0">
-        <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
-          <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase truncate">ทุนรวมคลัง</p>
-          <p className="text-sm md:text-lg font-black text-slate-800">฿{stockAnalytics.totalCostValue.toLocaleString()}</p>
-        </div>
-        <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
-          <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase truncate">มูลค่าขายรวม</p>
-          <p className="text-sm md:text-lg font-black text-slate-800">฿{stockAnalytics.totalSalesValue.toLocaleString()}</p>
-        </div>
-        <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-emerald-200 bg-emerald-50/50">
-          <p className="text-[9px] md:text-[10px] font-bold text-emerald-700 uppercase truncate">กำไรคาดการณ์</p>
-          <p className="text-sm md:text-lg font-black text-emerald-600">+฿{stockAnalytics.expectedProfit.toLocaleString()}</p>
-        </div>
-      </div>
-
-      <div className="bg-white p-2.5 rounded-2xl shadow-sm border mb-3 flex justify-between items-center gap-2 shrink-0">
-        <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border flex-1">
-          <Search size={16} className="text-slate-400 shrink-0" />
-          <input 
-            type="text" 
-            placeholder="ค้นหาสินค้าในคลัง..." 
-            value={searchTerm} 
-            onChange={e => setSearchTerm(e.target.value)}
-            className="bg-transparent text-xs outline-none w-full"
-          />
-        </div>
-
-        <button 
-          onClick={() => { setEditingItem(null); setIsAddModalOpen(true); }}
-          className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm transition shrink-0"
-        >
-          <Plus size={16} /> <span className="hidden sm:inline">เพิ่มสินค้าใหม่</span><span className="sm:hidden">เพิ่ม</span>
-        </button>
-      </div>
-
-      <div className="flex-1 bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col">
-        <div className="md:hidden flex-1 overflow-y-auto p-2.5 space-y-2">
-          {filteredInventory.map(item => {
-            const isLow = item.current_stock <= item.min_stock_alert;
-            return (
-              <div key={item.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col justify-between gap-2">
-                <div className="flex justify-between items-start gap-2">
-                  <div>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 mb-1 inline-block">
-                      {item.category}
-                    </span>
-                    <h4 className="font-bold text-slate-800 text-xs">{item.name}</h4>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => { setEditingItem(item); setIsAddModalOpen(true); }} className="p-1.5 text-blue-600 bg-white hover:bg-blue-50 rounded-lg border">
-                      <Edit size={14} />
-                    </button>
-                    <button onClick={() => setItemToDelete(item)} className="p-1.5 text-rose-600 bg-white hover:bg-rose-50 rounded-lg border">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center border-t pt-2 mt-1">
-                  <div className="text-xs">
-                    <span className="text-slate-400">ทุน ฿{item.cost_price}</span> → <span className="font-extrabold text-emerald-600">ขาย ฿{item.selling_price}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 bg-white rounded-xl p-1 border">
-                    <button onClick={() => handleQuickStockChange(item.id, -1)} className="p-1 text-slate-600 hover:bg-slate-100 rounded">
-                      <MinusCircle size={16} />
-                    </button>
-                    <span className={`font-black text-xs px-2 py-0.5 rounded ${isLow ? 'bg-rose-100 text-rose-700' : 'text-slate-800'}`}>
-                      เหลือ {item.current_stock}
-                    </span>
-                    <button onClick={() => handleQuickStockChange(item.id, 1)} className="p-1 text-slate-600 hover:bg-slate-100 rounded">
-                      <PlusCircle size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="hidden md:block flex-1 overflow-y-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100 text-slate-600 font-bold border-b sticky top-0">
-              <tr>
-                <th className="p-3">สินค้า</th>
-                <th className="p-3">หมวดหมู่</th>
-                <th className="p-3 text-right">ทุน</th>
-                <th className="p-3 text-right">ราคาขาย</th>
-                <th className="p-3 text-center">ปรับสต็อกด่วน</th>
-                <th className="p-3 text-center">จัดการ</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredInventory.map(item => {
-                const isLow = item.current_stock <= item.min_stock_alert;
-                return (
-                  <tr key={item.id} className="hover:bg-slate-50 transition">
-                    <td className="p-3 font-bold text-slate-800">{item.name}</td>
-                    <td className="p-3 text-slate-500">{item.category}</td>
-                    <td className="p-3 text-right text-slate-500">฿{item.cost_price}</td>
-                    <td className="p-3 text-right font-extrabold text-emerald-600">฿{item.selling_price}</td>
-                    <td className="p-3 text-center">
-                      <div className="flex justify-center items-center gap-1.5">
-                        <button onClick={() => handleQuickStockChange(item.id, -1)} className="p-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600">
-                          <MinusCircle size={14} />
-                        </button>
-                        <span className={`font-black px-2 py-0.5 rounded-lg ${isLow ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-800'}`}>
-                          {item.current_stock}
-                        </span>
-                        <button onClick={() => handleQuickStockChange(item.id, 1)} className="p-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600">
-                          <PlusCircle size={14} />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="p-3 text-center">
-                      <div className="flex justify-center gap-1">
-                        <button onClick={() => { setEditingItem(item); setIsAddModalOpen(true); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg">
-                          <Edit size={14} />
-                        </button>
-                        <button onClick={() => setItemToDelete(item)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {isAddModalOpen && (
-        <ProductModal 
-          item={editingItem} 
-          onSave={handleSaveProduct} 
-          onClose={() => setIsAddModalOpen(false)} 
-        />
-      )}
-
-      {itemToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl text-center">
-            <Trash2 size={32} className="text-rose-500 mx-auto mb-2" />
-            <h3 className="font-bold text-slate-800 mb-1">ยืนยันลบสินค้าออกจากคลัง</h3>
-            <p className="text-xs text-slate-500 mb-4">คุณต้องการลบ "{itemToDelete.name}" หรือไม่?</p>
-            <div className="flex gap-2">
-              <button onClick={() => setItemToDelete(null)} className="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">ยกเลิก</button>
-              <button onClick={handleDeleteProduct} className="flex-1 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-sm">ยืนยันลบ</button>
+      {/* 2. Low Stock Modal */}
+      {isLowStockModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+              <h3 className="font-black text-lg text-amber-600 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" /> สินค้าใกล้หมดในคลัง ({lowStockItems.length})
+              </h3>
+              <button onClick={() => setIsLowStockModalOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
-/* ====================================================================
-   VIEW 3: DebtTrackerView - สมุดเซ็นหนี้ + ประวัติคนติดหนี้
-   ==================================================================== */
-function DebtTrackerView({ customers, setCustomers, debtLogs, setDebtLogs, triggerToast }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCustForPay, setSelectedCustForPay] = useState(null);
-  const [payAmount, setPayAmount] = useState('');
-  const [newCustModal, setNewCustModal] = useState(false);
-  const [newCustName, setNewCustName] = useState('');
-  const [newCustPhone, setNewCustPhone] = useState('');
-  const [custToDelete, setCustToDelete] = useState(null);
-  const [viewHistoryCust, setViewHistoryCust] = useState(null); // แสดงประวัติการเซ็นหนี้รายคน
-
-  const filteredCusts = useMemo(() => {
-    return customers.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [customers, searchTerm]);
-
-  const totalDebtBalance = useMemo(() => {
-    return customers.reduce((sum, c) => sum + c.balance, 0);
-  }, [customers]);
-
-  const handlePayDebt = (e) => {
-    e.preventDefault();
-    const amt = Number(payAmount);
-    if (!selectedCustForPay || isNaN(amt) || amt <= 0) return;
-
-    if (amt > selectedCustForPay.balance) {
-      triggerToast('ยอดชำระมากกว่ายอดหนี้ค้างชำระ', 'error');
-      return;
-    }
-
-    setCustomers(prev => prev.map(c => {
-      if (c.id === selectedCustForPay.id) {
-        return {
-          ...c,
-          balance: c.balance - amt,
-          totalPaid: c.totalPaid + amt
-        };
-      }
-      return c;
-    }));
-
-    // บันทึกประวัติการชำระหนี้ (Debt Log)
-    const newLog = {
-      id: 'dlog-' + Date.now(),
-      customerId: selectedCustForPay.id,
-      customerName: selectedCustForPay.name,
-      type: 'pay', // 'pay' = ชำระหนี้
-      amount: amt,
-      date: new Date().toISOString(),
-      note: `นำเงินมาชำระหนี้ ฿${amt}`
-    };
-
-    setDebtLogs(prev => [newLog, ...prev]);
-
-    playSound('success');
-    triggerToast(`บันทึกการรับชำระหนี้ ฿${amt} เรียบร้อยแล้ว`, 'success');
-    setSelectedCustForPay(null);
-    setPayAmount('');
-  };
-
-  const handleDeleteCustomer = () => {
-    if (custToDelete) {
-      setCustomers(prev => prev.filter(c => c.id !== custToDelete.id));
-      setCustToDelete(null);
-      playSound('delete');
-      triggerToast(`ลบรายชื่อลูกหนี้ออกจากสมุดเซ็นเรียบร้อยแล้ว`, 'info');
-    }
-  };
-
-  const handleClearBalance = (cust) => {
-    setCustomers(prev => prev.map(c => c.id === cust.id ? { ...c, balance: 0 } : c));
-    
-    // บันทึกล้างหนี้
-    const newLog = {
-      id: 'dlog-' + Date.now(),
-      customerId: cust.id,
-      customerName: cust.name,
-      type: 'pay',
-      amount: cust.balance,
-      date: new Date().toISOString(),
-      note: `เจ้าของร้านล้างยอดหนี้เป็น ฿0`
-    };
-    setDebtLogs(prev => [newLog, ...prev]);
-
-    triggerToast(`ล้างยอดหนี้ของ ${cust.name} เป็น ฿0 เรียบร้อยแล้ว`, 'success');
-  };
-
-  const handleAddCustomer = (e) => {
-    e.preventDefault();
-    if (!newCustName.trim()) return;
-
-    const newObj = {
-      id: 'c-' + Date.now(),
-      name: newCustName.trim(),
-      phone: newCustPhone.trim() || '-',
-      balance: 0,
-      totalPaid: 0
-    };
-
-    setCustomers(prev => [...prev, newObj]);
-    setNewCustModal(false);
-    setNewCustName('');
-    setNewCustPhone('');
-    triggerToast('เพิ่มรายชื่อในสมุดเซ็นเรียบร้อยแล้ว', 'success');
-  };
-
-  return (
-    <div className="flex-1 flex flex-col h-full bg-slate-100 p-3 md:p-4 overflow-hidden">
-      <div className="bg-white p-3.5 rounded-2xl shadow-sm border mb-3 flex flex-wrap justify-between items-center gap-3 shrink-0">
-        <div>
-          <h2 className="text-base md:text-lg font-black text-slate-800 flex items-center gap-2">
-            <BookOpen size={20} className="text-amber-500" />
-            สมุดเซ็นหนี้ / ประวัติคนติดหนี้
-          </h2>
-          <p className="text-xs text-slate-400">จัดการรายชื่อ รับชำระหนี้ และดูประวัติการติดหนี้-จ่ายเงินย้อนหลัง</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-2xl text-right">
-            <span className="text-[9px] font-bold text-amber-700 uppercase block">ยอดหนี้ค้างรวม</span>
-            <span className="text-base md:text-lg font-black text-amber-600">฿{totalDebtBalance.toLocaleString()}</span>
-          </div>
-
-          <button 
-            onClick={() => setNewCustModal(true)}
-            className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm transition"
-          >
-            <UserPlus size={16} /> <span className="hidden sm:inline">เพิ่มชื่อลูกหนี้</span><span className="sm:hidden">เพิ่ม</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col">
-        <div className="p-2.5 border-b bg-slate-50 flex items-center gap-2 shrink-0">
-          <Search size={16} className="text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="ค้นหาชื่อลูกหนี้..." 
-            value={searchTerm} 
-            onChange={e => setSearchTerm(e.target.value)}
-            className="bg-transparent text-xs outline-none w-full"
-          />
-        </div>
-
-        {/* Mobile View Card List */}
-        <div className="md:hidden flex-1 overflow-y-auto p-2.5 space-y-2">
-          {filteredCusts.map(cust => (
-            <div key={cust.id} className="bg-slate-50 border rounded-2xl p-3 flex flex-col gap-2">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-bold text-slate-800 text-sm">{cust.name}</h4>
-                  <p className="text-[11px] text-slate-400">โทร: {cust.phone}</p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button 
-                    onClick={() => setViewHistoryCust(cust)}
-                    title="ดูประวัติการเซ็นหนี้"
-                    className="p-1.5 text-blue-600 hover:bg-blue-50 bg-white rounded-lg border shadow-sm flex items-center gap-1 text-[10px] font-bold"
-                  >
-                    <FileText size={14} /> ประวัติ
-                  </button>
-                  <button 
-                    onClick={() => setCustToDelete(cust)}
-                    title="ลบรายชื่อ"
-                    className="p-1.5 text-rose-500 hover:bg-rose-50 bg-white rounded-lg border shadow-sm"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center border-t pt-2 mt-1">
-                <div>
-                  <span className="text-[10px] text-slate-400 block">ยอดติดหนี้</span>
-                  <span className={`font-black text-sm ${cust.balance > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                    ฿{cust.balance.toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  {cust.balance > 0 && (
-                    <button 
-                      onClick={() => handleClearBalance(cust)}
-                      title="ปรับหนี้เป็น 0"
-                      className="px-2 py-1.5 bg-slate-200 text-slate-700 rounded-xl text-[10px] font-bold"
-                    >
-                      ล้างหนี้
-                    </button>
-                  )}
-                  <button 
-                    disabled={cust.balance <= 0}
-                    onClick={() => { setSelectedCustForPay(cust); setPayAmount(cust.balance); }}
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition ${
-                      cust.balance > 0 ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    }`}
-                  >
-                    ชำระหนี้
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Desktop View Table */}
-        <div className="hidden md:block flex-1 overflow-y-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100 text-slate-600 font-bold border-b sticky top-0">
-              <tr>
-                <th className="p-3.5">ชื่อลูกค้า / สมุดเซ็น</th>
-                <th className="p-3.5">เบอร์โทรศัพท์</th>
-                <th className="p-3.5 text-right">ยอดค้างชำระ</th>
-                <th className="p-3.5 text-right">ยอดชำระแล้วรวม</th>
-                <th className="p-3.5 text-center">จัดการ</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredCusts.map(cust => (
-                <tr key={cust.id} className="hover:bg-slate-50 transition">
-                  <td className="p-3.5 font-bold text-slate-800">{cust.name}</td>
-                  <td className="p-3.5 text-slate-500">{cust.phone}</td>
-                  <td className="p-3.5 text-right">
-                    <span className={`font-black text-sm ${cust.balance > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                      ฿{cust.balance.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="p-3.5 text-right text-slate-500">฿{cust.totalPaid.toLocaleString()}</td>
-                  <td className="p-3.5 text-center">
-                    <div className="flex justify-center items-center gap-1.5">
-                      <button 
-                        onClick={() => setViewHistoryCust(cust)}
-                        title="ดูประวัติการติดหนี้ทั้งหมด"
-                        className="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-xl text-xs font-bold flex items-center gap-1"
-                      >
-                        <FileText size={14} /> ประวัติหนี้
-                      </button>
-
-                      <button 
-                        disabled={cust.balance <= 0}
-                        onClick={() => { setSelectedCustForPay(cust); setPayAmount(cust.balance); }}
-                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition ${
-                          cust.balance > 0 ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-sm' : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                        }`}
-                      >
-                        ชำระหนี้
-                      </button>
-
-                      {cust.balance > 0 && (
-                        <button 
-                          onClick={() => handleClearBalance(cust)}
-                          title="ล้างยอดหนี้เป็น 0"
-                          className="px-2 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl text-xs font-semibold"
-                        >
-                          ล้างหนี้
-                        </button>
-                      )}
-
-                      <button 
-                        onClick={() => setCustToDelete(cust)}
-                        title="ลบรายชื่อออกจากสมุดเซ็น"
-                        className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+            {lowStockItems.length === 0 ? (
+              <p className="text-center py-8 text-gray-400 font-bold">ไม่มีสินค้าที่ใกล้หมดในขณะนี้</p>
+            ) : (
+              <div className="space-y-2 max-h-72 overflow-y-auto">
+                {lowStockItems.map(item => (
+                  <div key={item.id} className="flex justify-between items-center p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold">
+                    <div>
+                      <p className="text-gray-800">{item.name}</p>
+                      <p className="text-amber-600 font-normal">แจ้งเตือนเมื่อต่ำกว่า: {item.min_stock_alert} ชิ้น</p>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    <span className="text-red-600 font-black text-sm">{item.current_stock} ชิ้น</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
-      {/* Modal ดูประวัติการติดหนี้ / จ่ายเงินย้อนหลังรายคน */}
-      {viewHistoryCust && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-5 md:p-6 w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
-            <div className="flex justify-between items-center border-b pb-3 mb-3">
+            <button
+              onClick={() => setIsLowStockModalOpen(false)}
+              className="w-full py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
+            >
+              ปิดหน้าต่าง
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Restock Pack Modal */}
+      {restockProduct && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+              <h3 className="font-black text-lg text-pink-700">รับสินค้าเข้า (คำนวณแบบแพ็ค)</h3>
+              <button onClick={() => setRestockProduct(null)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="text-sm font-bold text-gray-800 bg-pink-50 p-3 rounded-xl border border-pink-100">
+              สินค้า: {restockProduct.name}
+            </p>
+
+            <div className="space-y-3 text-xs font-bold text-gray-700">
               <div>
-                <h3 className="font-black text-slate-800 text-base flex items-center gap-2">
-                  <FileText className="text-amber-500" size={18} /> ประวัติการเซ็นหนี้: {viewHistoryCust.name}
-                </h3>
-                <p className="text-xs text-slate-400">เบอร์โทร: {viewHistoryCust.phone}</p>
+                <label className="block mb-1">จำนวนกี่แพ็ค/ลัง</label>
+                <input
+                  type="number"
+                  value={restockData.packs}
+                  onChange={(e) => setRestockData({ ...restockData, packs: e.target.value })}
+                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                />
               </div>
-              <button onClick={() => setViewHistoryCust(null)} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
-            </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-              {debtLogs.filter(log => log.customerId === viewHistoryCust.id).length === 0 ? (
-                <div className="text-center py-8 text-slate-400 text-xs">ยังไม่มีประวัติการเซ็นหนี้ของลูกหนี้ท่านนี้</div>
-              ) : (
-                debtLogs.filter(log => log.customerId === viewHistoryCust.id).map(log => {
-                  const isCredit = log.type === 'credit';
-                  const dateStr = new Date(log.date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
-                  return (
-                    <div key={log.id} className={`p-3 rounded-2xl border flex justify-between items-center ${
-                      isCredit ? 'bg-amber-50/50 border-amber-200' : 'bg-emerald-50/50 border-emerald-200'
-                    }`}>
-                      <div>
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
-                            isCredit ? 'bg-amber-200 text-amber-800' : 'bg-emerald-200 text-emerald-800'
-                          }`}>
-                            {isCredit ? 'ติดหนี้เพิ่ม' : 'ชำระหนี้'}
-                          </span>
-                          <span className="text-[10px] text-slate-400">{dateStr}</span>
-                        </div>
-                        <p className="text-xs font-semibold text-slate-700">{log.note}</p>
-                      </div>
+              <div>
+                <label className="block mb-1">จำนวนชิ้นต่อ 1 แพ็ค/ลัง</label>
+                <input
+                  type="number"
+                  value={restockData.piecesPerPack}
+                  onChange={(e) => setRestockData({ ...restockData, piecesPerPack: e.target.value })}
+                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                />
+              </div>
 
-                      <div className="text-right">
-                        <span className={`font-black text-sm ${isCredit ? 'text-amber-600' : 'text-emerald-600'}`}>
-                          {isCredit ? '+' : '-'}฿{log.amount.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })
+              <div>
+                <label className="block mb-1">ราคาต่อ 1 แพ็ค/ลัง (บาท)</label>
+                <input
+                  type="number"
+                  value={restockData.pricePerPack}
+                  onChange={(e) => setRestockData({ ...restockData, pricePerPack: e.target.value })}
+                  placeholder="เช่น 598"
+                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                />
+              </div>
+
+              {restockData.packs && restockData.piecesPerPack && restockData.pricePerPack && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-xl space-y-1">
+                  <p className="text-green-700">คำนวณได้:</p>
+                  <p className="text-gray-700">- เพิ่มเข้าสต็อกรวม: <strong>{(parseInt(restockData.packs) || 0) * (parseInt(restockData.piecesPerPack) || 0)} ชิ้น</strong></p>
+                  <p className="text-gray-700">- ต้นทุนต่อชิ้นใหม่: <strong>฿{(parseFloat(restockData.pricePerPack) / parseInt(restockData.piecesPerPack)).toFixed(2)}</strong></p>
+                </div>
               )}
             </div>
 
-            <div className="pt-3 border-t mt-3 flex justify-between items-center bg-slate-50 p-3 rounded-2xl">
-              <span className="text-xs font-bold text-slate-600">ยอดหนี้คงเหลือปัจจุบัน:</span>
-              <span className="text-lg font-black text-amber-600">฿{viewHistoryCust.balance.toLocaleString()}</span>
-            </div>
+            <button
+              onClick={handleRestockPack}
+              className="w-full py-3 bg-green-600 text-white font-black rounded-xl shadow hover:bg-green-700"
+            >
+              บันทึกการรับเข้าสต็อก
+            </button>
           </div>
         </div>
       )}
 
-      {/* Pay Debt Modal */}
-      {selectedCustForPay && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-base font-black text-slate-800 mb-1">รับชำระหนี้: {selectedCustForPay.name}</h3>
-            <p className="text-xs text-slate-400 mb-4">ยอดค้างชำระปัจจุบัน: <strong className="text-amber-600">฿{selectedCustForPay.balance}</strong></p>
+      {/* 4. Bulk Add Modal */}
+      {isBulkAddOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-xl border-2 border-pink-200 space-y-4 max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+              <h3 className="font-black text-lg text-pink-700">เพิ่มสินค้าใหม่ (หลายรายการพร้อมกัน)</h3>
+              <button onClick={() => setIsBulkAddOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-            <form onSubmit={handlePayDebt} className="space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {bulkItems.map((item, idx) => (
+                <div key={idx} className="p-3 rounded-2xl border border-pink-200 bg-pink-50/50 space-y-2 relative">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-pink-600">รายการที่ {idx + 1}</span>
+                    {bulkItems.length > 1 && (
+                      <button
+                        onClick={() => setBulkItems(bulkItems.filter((_, i) => i !== idx))}
+                        className="text-red-500 hover:text-red-700 text-xs font-bold"
+                      >
+                        ลบออก
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold">
+                    <input
+                      type="text"
+                      placeholder="ชื่อสินค้า..."
+                      value={item.name}
+                      onChange={(e) => {
+                        const updated = [...bulkItems];
+                        updated[idx].name = e.target.value;
+                        setBulkItems(updated);
+                      }}
+                      className="p-2 border rounded-xl"
+                    />
+
+                    <select
+                      value={item.category}
+                      onChange={(e) => {
+                        const updated = [...bulkItems];
+                        updated[idx].category = e.target.value;
+                        setBulkItems(updated);
+                      }}
+                      className="p-2 border rounded-xl"
+                    >
+                      {categories.filter(c => c !== 'ทั้งหมด').map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="number"
+                      placeholder="ราคาทุน..."
+                      value={item.cost_price}
+                      onChange={(e) => {
+                        const updated = [...bulkItems];
+                        updated[idx].cost_price = e.target.value;
+                        setBulkItems(updated);
+                      }}
+                      className="p-2 border rounded-xl"
+                    />
+
+                    <input
+                      type="number"
+                      placeholder="ราคาขาย..."
+                      value={item.selling_price}
+                      onChange={(e) => {
+                        const updated = [...bulkItems];
+                        updated[idx].selling_price = e.target.value;
+                        setBulkItems(updated);
+                      }}
+                      className="p-2 border rounded-xl"
+                    />
+
+                    <input
+                      type="number"
+                      placeholder="จำนวนสต็อก..."
+                      value={item.current_stock}
+                      onChange={(e) => {
+                        const updated = [...bulkItems];
+                        updated[idx].current_stock = e.target.value;
+                        setBulkItems(updated);
+                      }}
+                      className="p-2 border rounded-xl"
+                    />
+
+                    <input
+                      type="number"
+                      placeholder="เตือนเมื่อต่ำกว่า..."
+                      value={item.min_stock_alert}
+                      onChange={(e) => {
+                        const updated = [...bulkItems];
+                        updated[idx].min_stock_alert = e.target.value;
+                        setBulkItems(updated);
+                      }}
+                      className="p-2 border rounded-xl"
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <button
+                onClick={() => setBulkItems([...bulkItems, { name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }])}
+                className="w-full py-2 bg-pink-100 text-pink-700 font-bold text-xs rounded-xl border border-dashed border-pink-300 hover:bg-pink-200"
+              >
+                + เพิ่มอีกรายการ
+              </button>
+            </div>
+
+            <button
+              onClick={handleSaveBulkProducts}
+              className="w-full py-3 bg-pink-500 text-white font-black rounded-xl shadow hover:bg-pink-600"
+            >
+              บันทึกสินค้าทั้งหมด
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Edit Product Modal */}
+      {editingProduct && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+              <h3 className="font-black text-lg text-pink-700">แก้ไขข้อมูลสินค้า</h3>
+              <button onClick={() => setEditingProduct(null)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs font-bold text-gray-700">
               <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">จำนวนเงินที่นำมาชำระ (บาท)</label>
-                <input 
-                  type="number" 
-                  max={selectedCustForPay.balance}
-                  value={payAmount} 
-                  onChange={e => setPayAmount(e.target.value)}
-                  className="w-full border-2 border-amber-400 rounded-2xl p-3 text-xl font-black text-center outline-none"
-                  required
+                <label className="block mb-1">ชื่อสินค้า</label>
+                <input
+                  type="text"
+                  value={editingProduct.name}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
                 />
               </div>
 
+              <div>
+                <label className="block mb-1">หมวดหมู่</label>
+                <select
+                  value={editingProduct.category}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                >
+                  {categories.filter(c => c !== 'ทั้งหมด').map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block mb-1">ราคาทุน</label>
+                  <input
+                    type="number"
+                    value={editingProduct.cost_price}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, cost_price: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1">ราคาขาย</label>
+                  <input
+                    type="number"
+                    value={editingProduct.selling_price}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, selling_price: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block mb-1">สต็อกปัจจุบัน</label>
+                  <input
+                    type="number"
+                    value={editingProduct.current_stock}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, current_stock: parseInt(e.target.value) || 0 })}
+                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1">เตือนเมื่อต่ำกว่า</label>
+                  <input
+                    type="number"
+                    value={editingProduct.min_stock_alert}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, min_stock_alert: parseInt(e.target.value) || 5 })}
+                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setProducts(products.map(p => p.id === editingProduct.id ? editingProduct : p));
+                setEditingProduct(null);
+                showAlert('บันทึกสำเร็จ', 'อัปเดตข้อมูลสินค้าเรียบร้อยแล้ว');
+              }}
+              className="w-full py-3 bg-pink-500 text-white font-black rounded-xl shadow hover:bg-pink-600"
+            >
+              บันทึกการแก้ไข
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Settings Modal */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+              <h3 className="font-black text-lg text-pink-700 flex items-center gap-2">
+                <Settings className="h-5 w-5" /> ตั้งค่าระบบ
+              </h3>
+              <button onClick={() => setIsSettingsOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Backup & Restore */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl space-y-3">
+              <h4 className="font-black text-sm text-blue-800 flex items-center gap-1.5">
+                <Download className="h-4 w-4" /> สำรองและกู้คืนข้อมูล
+              </h4>
+              <p className="text-xs text-blue-600">ดาวน์โหลดเก็บไว้เพื่อป้องกันข้อมูลสูญหาย</p>
+              
               <div className="flex gap-2">
-                <button type="button" onClick={() => setSelectedCustForPay(null)} className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-xs">ยกเลิก</button>
-                <button type="submit" className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-bold text-xs shadow-md hover:bg-amber-600">บันทึกชำระหนี้</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                <button
+                  onClick={handleExportData}
+                  className="flex-1 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow hover:bg-blue-700 flex items-center justify-center gap-1"
+                >
+                  <Download className="h-3.5 w-3.5" /> ดาวน์โหลดเก็บไว้
+                </button>
 
-      {/* Add Customer Modal */}
-      {newCustModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-base font-black text-slate-800 mb-4">เพิ่มชื่อลูกหนี้ในสมุดเซ็น</h3>
-
-            <form onSubmit={handleAddCustomer} className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">ชื่อ-นามสกุล / ชื่อเรียก *</label>
-                <input 
-                  type="text" 
-                  value={newCustName} 
-                  onChange={e => setNewCustName(e.target.value)}
-                  placeholder="เช่น ป้าจ๋อย, ช่างเบิร์ด"
-                  className="w-full border rounded-xl p-2.5 text-xs outline-none"
-                  required
-                />
+                <label className="flex-1 py-2 bg-white border border-blue-300 text-blue-600 font-bold text-xs rounded-xl shadow hover:bg-blue-50 flex items-center justify-center gap-1 cursor-pointer">
+                  <Upload className="h-3.5 w-3.5" /> อัปโหลดกู้คืน
+                  <input
+                    type="file"
+                    accept=".json"
+                    ref={fileInputRef}
+                    onChange={handleImportData}
+                    className="hidden"
+                  />
+                </label>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">เบอร์โทรศัพท์</label>
-                <input 
-                  type="text" 
-                  value={newCustPhone} 
-                  onChange={e => setNewCustPhone(e.target.value)}
-                  placeholder="08X-XXX-XXXX"
-                  className="w-full border rounded-xl p-2.5 text-xs outline-none"
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setNewCustModal(false)} className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-xs">ยกเลิก</button>
-                <button type="submit" className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-bold text-xs shadow-md">เพิ่มรายชื่อ</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Customer Modal */}
-      {custToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl text-center">
-            <UserX size={36} className="text-rose-500 mx-auto mb-2" />
-            <h3 className="font-extrabold text-slate-800 text-base mb-1">ยืนยันลบรายชื่อลูกหนี้</h3>
-            <p className="text-xs text-slate-500 mb-4">คุณต้องการลบรายชื่อ "{custToDelete.name}" ออกจากสมุดเซ็นหรือไม่?</p>
-            <div className="flex gap-2">
-              <button onClick={() => setCustToDelete(null)} className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">ยกเลิก</button>
-              <button onClick={handleDeleteCustomer} className="flex-1 py-2.5 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-md">ยืนยันลบ</button>
             </div>
+
+            {/* Password Change */}
+            <div className="p-4 bg-pink-50 border border-pink-200 rounded-2xl space-y-3">
+              <h4 className="font-black text-sm text-pink-800 flex items-center gap-1.5">
+                <Lock className="h-4 w-4" /> รหัสผ่านผู้ดูแลระบบ (สำหรับลบข้อมูล)
+              </h4>
+              <input
+                type="text"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className="w-full p-2.5 border-2 border-pink-200 rounded-xl text-center font-black text-base"
+              />
+              <p className="text-[10px] text-pink-500 text-center">รหัสเริ่มต้นคือ 4497 สามารถแก้ไขเป็นตัวเลขใดก็ได้</p>
+            </div>
+
+            <button
+              onClick={() => setIsSettingsOpen(false)}
+              className="w-full py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
+            >
+              ปิด
+            </button>
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-function SalesHistoryView({ salesHistory, onEditSale, onDeleteSale }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterDate, setFilterDate] = useState('');
-  const [editingSale, setEditingSale] = useState(null);
-  const [newQty, setNewQty] = useState(1);
-  const [saleToDelete, setSaleToDelete] = useState(null);
+      {/* 7. Password Verification Modal */}
+      {passwordModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-xs w-full p-6 shadow-xl border-2 border-pink-200 space-y-4 text-center">
+            <div className="bg-pink-100 p-3 rounded-full w-12 h-12 mx-auto flex items-center justify-center text-pink-600">
+              <Shield className="h-6 w-6" />
+            </div>
 
-  const filteredSales = useMemo(() => {
-    return [...salesHistory].reverse().filter(sale => {
-      const matchName = sale.productName.toLowerCase().includes(searchTerm.toLowerCase());
-      const saleDateStr = new Date(sale.timestamp).toISOString().slice(0, 10);
-      const matchDate = filterDate ? saleDateStr === filterDate : true;
-      return matchName && matchDate;
-    });
-  }, [salesHistory, searchTerm, filterDate]);
+            <div>
+              <h3 className="font-black text-base text-gray-800">{passwordModal.title}</h3>
+              <p className="text-xs text-gray-500 mt-1">กรุณากรอกรหัสผ่านเพื่อยืนยัน (4497)</p>
+            </div>
 
-  return (
-    <div className="flex-1 flex flex-col h-full bg-slate-100 p-3 md:p-4 overflow-hidden">
-      <div className="bg-white p-3.5 rounded-2xl shadow-sm border mb-3 flex flex-wrap gap-2 justify-between items-center shrink-0">
-        <div>
-          <h2 className="text-base md:text-lg font-black text-slate-800 flex items-center gap-2">
-            <History size={20} className="text-emerald-600" />
-            ประวัติการขายย้อนหลัง
-          </h2>
-          <p className="text-xs text-slate-400">แก้ไขจำนวนขาย หรือยกเลิกรายการบิล</p>
-        </div>
-
-        <div className="flex gap-2">
-          <input 
-            type="date" 
-            value={filterDate} 
-            onChange={e => setFilterDate(e.target.value)}
-            className="bg-slate-100 border text-xs rounded-xl p-2 outline-none"
-          />
-          <input 
-            type="text" 
-            placeholder="ค้นชื่อสินค้า..." 
-            value={searchTerm} 
-            onChange={e => setSearchTerm(e.target.value)}
-            className="bg-slate-100 border text-xs rounded-xl p-2 w-32 md:w-40 outline-none"
-          />
-        </div>
-      </div>
-
-      <div className="flex-1 bg-white rounded-2xl shadow-sm border overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-slate-100 text-slate-600 font-bold border-b sticky top-0">
-              <tr>
-                <th className="p-3">วัน-เวลา</th>
-                <th className="p-3">สินค้า</th>
-                <th className="p-3 text-center">การชำระ</th>
-                <th className="p-3 text-center">จำนวน</th>
-                <th className="p-3 text-right">ยอดรวม</th>
-                <th className="p-3 text-center">จัดการ</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredSales.map(sale => {
-                const saleDate = new Date(sale.timestamp);
-                const dateStr = `${saleDate.toLocaleDateString('th-TH')} ${saleDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
-                return (
-                  <tr key={sale.id} className="hover:bg-slate-50 transition">
-                    <td className="p-3 text-slate-500">{dateStr}</td>
-                    <td className="p-3 font-bold text-slate-800">{sale.productName}</td>
-                    <td className="p-3 text-center">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        sale.paymentType === 'credit' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
-                      }`}>
-                        {sale.paymentType === 'credit' ? 'สมุดเซ็น' : sale.paymentType === 'qr' ? 'QR Code' : 'เงินสด'}
-                      </span>
-                    </td>
-                    <td className="p-3 text-center font-bold">{sale.qty} ชิ้น</td>
-                    <td className="p-3 text-right font-black text-slate-800">฿{sale.revenue.toLocaleString()}</td>
-                    <td className="p-3 text-center">
-                      <div className="flex justify-center gap-1">
-                        <button onClick={() => { setEditingSale(sale); setNewQty(sale.qty); }} className="p-1 text-blue-600 hover:bg-blue-50 rounded-lg">
-                          <Edit size={14} />
-                        </button>
-                        <button onClick={() => setSaleToDelete(sale)} className="p-1 text-rose-600 hover:bg-rose-50 rounded-lg">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {editingSale && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="font-bold text-slate-800 mb-1">แก้ไขยอดขาย</h3>
-            <p className="text-xs text-slate-500 mb-4">{editingSale.productName}</p>
-            <input 
-              type="number" 
-              min="1" 
-              value={newQty} 
-              onChange={e => setNewQty(Number(e.target.value))}
-              className="w-full border-2 border-emerald-500 rounded-2xl p-3 text-center font-bold text-xl mb-4 outline-none"
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              placeholder="รหัสผ่าน..."
+              className="w-full p-3 border-2 border-pink-200 rounded-xl text-center font-black text-lg focus:outline-none focus:border-pink-500"
+              autoFocus
             />
+
             <div className="flex gap-2">
-              <button onClick={() => setEditingSale(null)} className="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">ยกเลิก</button>
-              <button onClick={() => { onEditSale(editingSale.id, newQty); setEditingSale(null); }} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">บันทึก</button>
+              <button
+                onClick={() => setPasswordModal({ isOpen: false, title: '', action: null })}
+                className="flex-1 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl"
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={verifyPassword}
+                className="flex-1 py-2 bg-pink-500 text-white font-bold text-xs rounded-xl shadow hover:bg-pink-600"
+              >
+                ยืนยัน
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {saleToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl text-center">
-            <Trash2 size={32} className="text-rose-500 mx-auto mb-2" />
-            <h3 className="font-bold text-slate-800 mb-1">ยืนยันยกเลิกรายการขาย</h3>
-            <p className="text-xs text-slate-500 mb-4">ระบบจะคืนสต็อก {saleToDelete.productName} +{saleToDelete.qty} ชิ้น</p>
-            <div className="flex gap-2">
-              <button onClick={() => setSaleToDelete(null)} className="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">ยกเลิก</button>
-              <button onClick={() => { onDeleteSale(saleToDelete.id); setSaleToDelete(null); }} className="flex-1 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold">ยืนยันลบบิล</button>
-            </div>
+      {/* 8. Alert Dialog */}
+      {alertDialog.isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-xs w-full p-5 shadow-xl border-2 border-pink-200 space-y-3 text-center">
+            <h3 className="font-black text-base text-gray-800">{alertDialog.title}</h3>
+            <p className="text-xs text-gray-600">{alertDialog.message}</p>
+            <button
+              onClick={() => setAlertDialog({ isOpen: false, title: '', message: '' })}
+              className="w-full py-2 bg-pink-500 text-white font-bold text-xs rounded-xl shadow hover:bg-pink-600"
+            >
+              ตกลง
+            </button>
           </div>
         </div>
       )}
+
     </div>
   );
 }
-
-function DashboardView({ inventory, salesHistory, customers }) {
-  const [timeframe, setTimeframe] = useState('daily');
-
-  const filteredSales = useMemo(() => {
-    const now = new Date();
-    return salesHistory.filter(sale => {
-      const saleDate = new Date(sale.timestamp);
-      if (timeframe === 'daily') return saleDate.toDateString() === now.toDateString();
-      if (timeframe === 'weekly') {
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(now.getDate() - 7);
-        return saleDate >= sevenDaysAgo;
-      }
-      if (timeframe === 'monthly') return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
-      return true;
-    });
-  }, [salesHistory, timeframe]);
-
-  const summary = useMemo(() => {
-    return filteredSales.reduce((acc, sale) => ({
-      revenue: acc.revenue + sale.revenue,
-      cost: acc.cost + sale.cost,
-      profit: acc.profit + sale.profit
-    }), { revenue: 0, cost: 0, profit: 0 });
-  }, [filteredSales]);
-
-  const chartData = useMemo(() => {
-    const map = {};
-    filteredSales.forEach(sale => {
-      if(!map[sale.productName]) map[sale.productName] = 0;
-      map[sale.productName] += sale.profit;
-    });
-    return Object.keys(map).map(name => ({ name, 'กำไร': map[name] })).sort((a,b) => b['กำไร'] - a['กำไร']).slice(0, 5);
-  }, [filteredSales]);
-
-  return (
-    <div className="flex-1 overflow-y-auto bg-slate-100 p-3 md:p-4 space-y-3">
-      <div className="bg-white p-1 rounded-2xl shadow-sm border flex">
-        {[
-          { id: 'daily', label: 'วันนี้' },
-          { id: 'weekly', label: '7 วันย้อนหลัง' },
-          { id: 'monthly', label: 'เดือนนี้' }
-        ].map(tf => (
-          <button key={tf.id} onClick={() => setTimeframe(tf.id)}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${timeframe === tf.id ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500'}`}>
-            {tf.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="bg-white p-3.5 rounded-2xl shadow-sm border-l-4 border-blue-500">
-          <p className="text-[10px] font-bold text-slate-400 uppercase">ยอดขายรวม</p>
-          <p className="text-xl md:text-2xl font-black text-slate-800">฿{summary.revenue.toLocaleString()}</p>
-        </div>
-        <div className="bg-white p-3.5 rounded-2xl shadow-sm border-l-4 border-amber-500">
-          <p className="text-[10px] font-bold text-slate-400 uppercase">ต้นทุนรวม</p>
-          <p className="text-xl md:text-2xl font-black text-slate-800">฿{summary.cost.toLocaleString()}</p>
-        </div>
-        <div className="bg-white p-3.5 rounded-2xl shadow-sm border-l-4 border-emerald-500">
-          <p className="text-[10px] font-bold text-emerald-700 uppercase">กำไรสุทธิ</p>
-          <p className="text-xl md:text-2xl font-black text-emerald-600">+฿{summary.profit.toLocaleString()}</p>
-        </div>
-      </div>
-
-      <div className="bg-white p-4 rounded-2xl shadow-sm border h-64">
-        <h3 className="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-          <BarChart2 size={16} className="text-emerald-600" /> สินค้ากำไรสูงสุด Top 5
-        </h3>
-        {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height="85%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tick={{fontSize: 10}} />
-              <YAxis tick={{fontSize: 10}} />
-              <Tooltip />
-              <Bar dataKey="กำไร" fill="#10b981" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-full flex items-center justify-center text-xs text-slate-400">ยังไม่มีข้อมูลยอดขายช่วงเวลานี้</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ReceiptModal({ receipt, onClose }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-xs font-mono">
-        <div className="text-center border-b pb-3 mb-3">
-          <h2 className="font-black text-sm text-slate-900">เช็คสต็อกคงเหลือ POS</h2>
-          <p className="text-[10px] text-slate-500">ใบเสร็จรับเงิน / สลิปย่อ</p>
-          <p className="text-[9px] text-slate-400 mt-1">{new Date(receipt.timestamp).toLocaleString('th-TH')}</p>
-        </div>
-
-        <div className="space-y-1.5 border-b pb-3 mb-3">
-          {receipt.items.map((item, idx) => (
-            <div key={idx} className="flex justify-between">
-              <span className="truncate max-w-[140px]">{item.name} x{item.qty}</span>
-              <span className="font-bold">฿{(item.price * item.qty).toLocaleString()}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-1 mb-4">
-          <div className="flex justify-between font-black text-sm">
-            <span>ยอดรวมทั้งสิ้น</span>
-            <span>฿{receipt.total.toLocaleString()}</span>
-          </div>
-          {receipt.paymentType === 'cash' && (
-            <>
-              <div className="flex justify-between text-slate-500">
-                <span>รับเงินสด</span>
-                <span>฿{receipt.cashReceived.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-emerald-600 font-bold">
-                <span>เงินทอน</span>
-                <span>฿{receipt.change.toLocaleString()}</span>
-              </div>
-            </>
-          )}
-          {receipt.paymentType === 'credit' && (
-            <div className="text-amber-700 bg-amber-50 p-1.5 rounded text-center text-[10px]">
-              ลงสมุดเซ็น: {receipt.customerName}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">ปิด</button>
-          <button onClick={() => window.print()} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl font-bold flex items-center justify-center gap-1">
-            <Printer size={14} /> พิมพ์
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProductModal({ item, onSave, onClose }) {
-  const [formData, setFormData] = useState(item || {
-    name: '', category: 'ทั่วไป', barcode: '', cost_price: 0, selling_price: 0, current_stock: 0, min_stock_alert: 5, pack_size: '', pack_price: ''
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.name.trim()) return;
-    onSave(formData);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
-        <h3 className="font-black text-slate-800 text-base mb-4">{item ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</h3>
-
-        <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-          <div>
-            <label className="block font-bold text-slate-600 mb-1">ชื่อสินค้า *</label>
-            <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required className="w-full border rounded-xl p-2.5 outline-none" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block font-bold text-slate-600 mb-1">หมวดหมู่</label>
-              <input type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full border rounded-xl p-2.5 outline-none" />
-            </div>
-            <div>
-              <label className="block font-bold text-slate-600 mb-1">รหัสบาร์โค้ด</label>
-              <input type="text" value={formData.barcode} onChange={e => setFormData({ ...formData, barcode: e.target.value })} className="w-full border rounded-xl p-2.5 outline-none" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block font-bold text-slate-600 mb-1">ราคาทุน (บาท)</label>
-              <input type="number" step="0.5" value={formData.cost_price} onChange={e => setFormData({ ...formData, cost_price: Number(e.target.value) })} className="w-full border rounded-xl p-2.5 outline-none" />
-            </div>
-            <div>
-              <label className="block font-bold text-slate-600 mb-1">ราคาขาย (บาท) *</label>
-              <input type="number" step="0.5" value={formData.selling_price} onChange={e => setFormData({ ...formData, selling_price: Number(e.target.value) })} required className="w-full border rounded-xl p-2.5 font-bold text-emerald-600 outline-none" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block font-bold text-slate-600 mb-1">จำนวนสต็อกปัจจุบัน</label>
-              <input type="number" value={formData.current_stock} onChange={e => setFormData({ ...formData, current_stock: Number(e.target.value) })} className="w-full border rounded-xl p-2.5 outline-none" />
-            </div>
-            <div>
-              <label className="block font-bold text-slate-600 mb-1">แจ้งเตือนสต็อกต่ำ</label>
-              <input type="number" value={formData.min_stock_alert} onChange={e => setFormData({ ...formData, min_stock_alert: Number(e.target.value) })} className="w-full border rounded-xl p-2.5 outline-none" />
-            </div>
-          </div>
-
-          <div className="flex gap-2 pt-3 border-t">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold">ยกเลิก</button>
-            <button type="submit" className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold shadow-sm">บันทึกสินค้า</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+    </script>
+</body>
+</html>
