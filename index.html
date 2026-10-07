@@ -26,6 +26,9 @@
   
   <!-- Babel Standalone CDN -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-pink-50 text-gray-800 font-sans min-h-screen pb-16">
   
@@ -34,6 +37,19 @@
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
+  // --- ตั้งค่าเปิดใช้งาน Firebase ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyDgZC1PG0V1nRyHQjNDzpaHIHkzrby6KNM",
+    authDomain: "database-fd67d.firebaseapp.com",
+    databaseURL: "https://database-fd67d-default-rtdb.firebaseio.com",
+    projectId: "database-fd67d",
+    storageBucket: "database-fd67d.firebasestorage.app",
+    messagingSenderId: "893574875834",
+    appId: "1:893574875834:web:98364fbc2cf908d5bb5083",
+    measurementId: "G-85V2QJHRYX"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
     const INITIAL_PRODUCTS = [
       // เครื่องดื่มแอลกอฮอล์
@@ -85,6 +101,51 @@
       const [adminPassword, setAdminPassword] = useState(() => {
         return localStorage.getItem('grocery_admin_password') || '4497';
       });
+ 
+  // ==========================================
+  // 🚀 ระบบ AUTO-SAVE & REALTIME SYNC
+  // ==========================================
+  const [isFirebaseReady, setIsFirebaseReady] = useState(false);
+
+  // 1. ดึงข้อมูล Realtime จาก Firebase เมื่อเปิดหน้าเว็บ
+  useEffect(() => {
+    db.ref('products').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setProducts(data);
+      } else {
+        db.ref('products').set(INITIAL_PRODUCTS);
+      }
+      setIsFirebaseReady(true);
+    });
+
+    db.ref('salesHistory').on('value', (snapshot) => {
+      if (snapshot.val()) setSalesHistory(snapshot.val());
+    });
+
+    db.ref('debtors').on('value', (snapshot) => {
+      if (snapshot.val()) setDebtors(snapshot.val());
+    });
+  }, []);
+
+  // 2. AUTO-SAVE: เซฟข้อมูลกลับ Firebase อัตโนมัติทันทีที่มีการเปลี่ยนแปลง
+  useEffect(() => {
+    if (isFirebaseReady && products) {
+      db.ref('products').set(products);
+    }
+  }, [products, isFirebaseReady]);
+
+  useEffect(() => {
+    if (isFirebaseReady && salesHistory) {
+      db.ref('salesHistory').set(salesHistory);
+    }
+  }, [salesHistory, isFirebaseReady]);
+
+  useEffect(() => {
+    if (isFirebaseReady && debtors) {
+      db.ref('debtors').set(debtors);
+    }
+  }, [debtors, isFirebaseReady]);
 
       const [qrCodeImage, setQrCodeImage] = useState(() => {
         return localStorage.getItem('grocery_qr_code') || 'https://placehold.co/300x300/fbcfe8/831843?text=PromptPay+QR';
