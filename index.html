@@ -1,1583 +1,1559 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My App</title>
-    <!-- ตัวช่วยรัน React และ Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide-react"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ร้านของชำพาสเทล - ระบบสต็อก & POS หน้าร้าน</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Font: Kanit -->
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+    }
+  </style>
+
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone CDN -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="bg-slate-100">
-    <div id="root"></div>
+<body class="bg-pink-50 text-gray-800 font-sans min-h-screen pb-16">
+  
+  <!-- React Mount Point -->
+  <div id="root"></div>
 
-    <script type="text/babel">
-        
-        // 📍 วางโค้ดทั้งหมดที่
-const { useState, useEffect, useMemo, useRef } = React;
-const { ShoppingCart, Package, BarChart2, AlertTriangle, Settings, Plus, Edit, Trash2, Check, X, Search, QrCode, Banknote, Image: ImageIcon, Bell, Truck, Download, Upload, Shield, TrendingUp, TrendingDown, Lock, RefreshCw, UserCheck, History, DollarSign, Eye } = lucideReact;
-      
-const INITIAL_PRODUCTS = [
-  // เครื่องดื่มแอลกอฮอล์
-  { id: '1', name: 'สิงห์ขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 54, selling_price: 62, current_stock: 48, min_stock_alert: 12 },
-  { id: '2', name: 'สิงห์กระป๋อง (ยาว)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 45, selling_price: 52, current_stock: 36, min_stock_alert: 10 },
-  { id: '3', name: 'ลีโอขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 50, selling_price: 58, current_stock: 60, min_stock_alert: 15 },
-  { id: '4', name: 'ลีโอกระป๋อง (ยาว)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 42, selling_price: 48, current_stock: 24, min_stock_alert: 10 },
-  { id: '5', name: 'ช้างขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 48, selling_price: 56, current_stock: 36, min_stock_alert: 12 },
-  { id: '6', name: 'เหล้าขาวใหญ่ (40 ดีกรี)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 105, selling_price: 120, current_stock: 15, min_stock_alert: 5 },
-  { id: '7', name: 'เหล้าขาวเล็ก', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 55, selling_price: 65, current_stock: 20, min_stock_alert: 5 },
-  { id: '8', name: 'หงส์แบน', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 135, selling_price: 150, current_stock: 10, min_stock_alert: 4 },
-  { id: '9', name: 'หงส์กลม', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 260, selling_price: 290, current_stock: 8, min_stock_alert: 3 },
-  { id: '10', name: 'หงส์ลิตร', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 330, selling_price: 360, current_stock: 6, min_stock_alert: 2 },
-  { id: '11', name: 'แสงโสมกลม', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 290, selling_price: 320, current_stock: 7, min_stock_alert: 3 },
-  { id: '12', name: 'โซดาขวด (สิงห์)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 8.5, selling_price: 11, current_stock: 120, min_stock_alert: 24 },
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
 
-  // บุหรี่/ไฟแช็ก
-  { id: '13', name: 'บุหรี่ S แดง', category: 'บุหรี่/ไฟแช็ก', cost_price: 62, selling_price: 72, current_stock: 15, min_stock_alert: 5 },
-  { id: '14', name: 'บุหรี่ S เขียว', category: 'บุหรี่/ไฟแช็ก', cost_price: 62, selling_price: 72, current_stock: 12, min_stock_alert: 5 },
-  { id: '15', name: 'บุหรี่ LM แดง', category: 'บุหรี่/ไฟแช็ก', cost_price: 90, selling_price: 105, current_stock: 20, min_stock_alert: 5 },
-  { id: '16', name: 'ไฟแช็ก', category: 'บุหรี่/ไฟแช็ก', cost_price: 7, selling_price: 12, current_stock: 50, min_stock_alert: 10 },
+    const INITIAL_PRODUCTS = [
+      // เครื่องดื่มแอลกอฮอล์
+      { id: '1', name: 'สิงห์ขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 54, selling_price: 62, current_stock: 48, min_stock_alert: 12 },
+      { id: '2', name: 'สิงห์กระป๋อง (ยาว)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 45, selling_price: 52, current_stock: 36, min_stock_alert: 10 },
+      { id: '3', name: 'ลีโอขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 50, selling_price: 58, current_stock: 60, min_stock_alert: 15 },
+      { id: '4', name: 'ลีโอกระป๋อง (ยาว)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 42, selling_price: 48, current_stock: 24, min_stock_alert: 10 },
+      { id: '5', name: 'ช้างขวด (ใหญ่)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 48, selling_price: 56, current_stock: 36, min_stock_alert: 12 },
+      { id: '6', name: 'เหล้าขาวใหญ่ (40 ดีกรี)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 105, selling_price: 120, current_stock: 15, min_stock_alert: 5 },
+      { id: '7', name: 'เหล้าขาวเล็ก', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 55, selling_price: 65, current_stock: 20, min_stock_alert: 5 },
+      { id: '8', name: 'หงส์แบน', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 135, selling_price: 150, current_stock: 10, min_stock_alert: 4 },
+      { id: '9', name: 'หงส์กลม', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 260, selling_price: 290, current_stock: 8, min_stock_alert: 3 },
+      { id: '10', name: 'หงส์ลิตร', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 330, selling_price: 360, current_stock: 6, min_stock_alert: 2 },
+      { id: '11', name: 'แสงโสมกลม', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 290, selling_price: 320, current_stock: 7, min_stock_alert: 3 },
+      { id: '12', name: 'โซดาขวด (สิงห์)', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: 8.5, selling_price: 11, current_stock: 120, min_stock_alert: 24 },
 
-  // เครื่องดื่มชูกำลัง/กาแฟ
-  { id: '17', name: 'เอ็ม 150', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 12, current_stock: 48, min_stock_alert: 12 },
-  { id: '18', name: 'ลีโพ', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 12, current_stock: 36, min_stock_alert: 12 },
-  { id: '19', name: 'สปอนเซอร์', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 13, current_stock: 36, min_stock_alert: 10 },
-  { id: '20', name: 'คาราบาวแดง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 8.5, selling_price: 10, current_stock: 48, min_stock_alert: 12 },
-  { id: '21', name: 'กะทิงแดง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 8.5, selling_price: 10, current_stock: 24, min_stock_alert: 10 },
-  { id: '22', name: 'กาแฟซอง (เบอร์ดี้)', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 4.5, selling_price: 6, current_stock: 100, min_stock_alert: 20 },
-  { id: '23', name: 'โอวัลตินซอง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 5, selling_price: 7, current_stock: 60, min_stock_alert: 15 }
-];
+      // บุหรี่/ไฟแช็ก
+      { id: '13', name: 'บุหรี่ S แดง', category: 'บุหรี่/ไฟแช็ก', cost_price: 62, selling_price: 72, current_stock: 15, min_stock_alert: 5 },
+      { id: '14', name: 'บุหรี่ S เขียว', category: 'บุหรี่/ไฟแช็ก', cost_price: 62, selling_price: 72, current_stock: 12, min_stock_alert: 5 },
+      { id: '15', name: 'บุหรี่ LM แดง', category: 'บุหรี่/ไฟแช็ก', cost_price: 90, selling_price: 105, current_stock: 20, min_stock_alert: 5 },
+      { id: '16', name: 'ไฟแช็ก', category: 'บุหรี่/ไฟแช็ก', cost_price: 7, selling_price: 12, current_stock: 50, min_stock_alert: 10 },
 
-export default function App() {
-  // State หลักสำหรับเก็บข้อมูล
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('grocery_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
+      // เครื่องดื่มชูกำลัง/กาแฟ
+      { id: '17', name: 'เอ็ม 150', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 12, current_stock: 48, min_stock_alert: 12 },
+      { id: '18', name: 'ลีโพ', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 12, current_stock: 36, min_stock_alert: 12 },
+      { id: '19', name: 'สปอนเซอร์', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 10, selling_price: 13, current_stock: 36, min_stock_alert: 10 },
+      { id: '20', name: 'คาราบาวแดง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 8.5, selling_price: 10, current_stock: 48, min_stock_alert: 12 },
+      { id: '21', name: 'กะทิงแดง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 8.5, selling_price: 10, current_stock: 24, min_stock_alert: 10 },
+      { id: '22', name: 'กาแฟซอง (เบอร์ดี้)', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 4.5, selling_price: 6, current_stock: 100, min_stock_alert: 20 },
+      { id: '23', name: 'โอวัลตินซอง', category: 'เครื่องดื่มชูกำลัง/กาแฟ', cost_price: 5, selling_price: 7, current_stock: 60, min_stock_alert: 15 }
+    ];
 
-  const [salesHistory, setSalesHistory] = useState(() => {
-    const saved = localStorage.getItem('grocery_sales_history');
-    return saved ? JSON.parse(saved) : [];
-  });
+    function App() {
+      const [products, setProducts] = useState(() => {
+        const saved = localStorage.getItem('grocery_products');
+        return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+      });
 
-  const [debtors, setDebtors] = useState(() => {
-    const saved = localStorage.getItem('grocery_debtors');
-    return saved ? JSON.parse(saved) : [];
-  });
+      const [salesHistory, setSalesHistory] = useState(() => {
+        const saved = localStorage.getItem('grocery_sales_history');
+        return saved ? JSON.parse(saved) : [];
+      });
 
-  const [adminPassword, setAdminPassword] = useState(() => {
-    return localStorage.getItem('grocery_admin_password') || '4497';
-  });
+      const [debtors, setDebtors] = useState(() => {
+        const saved = localStorage.getItem('grocery_debtors');
+        return saved ? JSON.parse(saved) : [];
+      });
 
-  const [qrCodeImage, setQrCodeImage] = useState(() => {
-    return localStorage.getItem('grocery_qr_code') || 'https://placehold.co/300x300/fbcfe8/831843?text=PromptPay+QR';
-  });
+      const [adminPassword, setAdminPassword] = useState(() => {
+        return localStorage.getItem('grocery_admin_password') || '4497';
+      });
 
-  // State สำหรับ UI Navigation
-  const [activeTab, setActiveTab] = useState('pos'); // 'pos', 'inventory', 'history', 'debtors'
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('ทั้งหมด');
+      const [qrCodeImage, setQrCodeImage] = useState(() => {
+        return localStorage.getItem('grocery_qr_code') || 'https://placehold.co/300x300/fbcfe8/831843?text=PromptPay+QR';
+      });
 
-  // State ตะกร้าสินค้าหน้าร้าน (POS)
-  const [cart, setCart] = useState([]);
+      // Navigation state
+      const [activeTab, setActiveTab] = useState('pos'); 
+      const [searchTerm, setSearchTerm] = useState('');
+      const [categoryFilter, setCategoryFilter] = useState('ทั้งหมด');
 
-  // Modals & Dialogs
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash', 'qr', 'debt'
-  const [cashReceived, setCashReceived] = useState('');
-  const [debtorName, setDebtorName] = useState('');
+      // Cart state
+      const [cart, setCart] = useState([]);
 
-  const [isLowStockModalOpen, setIsLowStockModalOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+      // Modals
+      const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+      const [paymentMethod, setPaymentMethod] = useState('cash'); 
+      const [cashReceived, setCashReceived] = useState('');
+      const [debtorName, setDebtorName] = useState('');
 
-  // Modal รับสินค้าเข้าแบบแพ็ค
-  const [restockProduct, setRestockProduct] = useState(null);
-  const [restockData, setRestockData] = useState({ packs: 1, piecesPerPack: 12, pricePerPack: '' });
+      const [isLowStockModalOpen, setIsLowStockModalOpen] = useState(false);
+      const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Modal เพิ่มสินค้าแบบเป็นชุด (Bulk)
-  const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
-  const [bulkItems, setBulkItems] = useState([
-    { name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }
-  ]);
+      // Pack restock modal
+      const [restockProduct, setRestockProduct] = useState(null);
+      const [restockData, setRestockData] = useState({ packs: 1, piecesPerPack: 12, pricePerPack: '' });
 
-  // Modal แก้ไขสินค้า
-  const [editingProduct, setEditingProduct] = useState(null);
+      // Bulk add modal
+      const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
+      const [bulkItems, setBulkItems] = useState([
+        { name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }
+      ]);
 
-  // Modal แก้ไขบิล
-  const [editingBill, setEditingBill] = useState(null);
+      // Edit product modal
+      const [editingProduct, setEditingProduct] = useState(null);
 
-  // Password Verification Dialog
-  const [passwordModal, setPasswordModal] = useState({ isOpen: false, title: '', action: null });
-  const [passwordInput, setPasswordInput] = useState('');
+      // Password modal
+      const [passwordModal, setPasswordModal] = useState({ isOpen: false, title: '', action: null });
+      const [passwordInput, setPasswordInput] = useState('');
 
-  // Custom Alert / Confirm Dialog
-  const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+      // Custom Alert
+      const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
 
-  useEffect(() => {
-    localStorage.setItem('grocery_products', JSON.stringify(products));
-  }, [products]);
+      useEffect(() => {
+        localStorage.setItem('grocery_products', JSON.stringify(products));
+      }, [products]);
 
-  useEffect(() => {
-    localStorage.setItem('grocery_sales_history', JSON.stringify(salesHistory));
-  }, [salesHistory]);
+      useEffect(() => {
+        localStorage.setItem('grocery_sales_history', JSON.stringify(salesHistory));
+      }, [salesHistory]);
 
-  useEffect(() => {
-    localStorage.setItem('grocery_debtors', JSON.stringify(debtors));
-  }, [debtors]);
+      useEffect(() => {
+        localStorage.setItem('grocery_debtors', JSON.stringify(debtors));
+      }, [debtors]);
 
-  useEffect(() => {
-    localStorage.setItem('grocery_admin_password', adminPassword);
-  }, [adminPassword]);
+      useEffect(() => {
+        localStorage.setItem('grocery_admin_password', adminPassword);
+      }, [adminPassword]);
 
-  useEffect(() => {
-    localStorage.setItem('grocery_qr_code', qrCodeImage);
-  }, [qrCodeImage]);
+      useEffect(() => {
+        localStorage.setItem('grocery_qr_code', qrCodeImage);
+      }, [qrCodeImage]);
 
-  // แสดงแจ้งเตือน Custom Dialog
-  const showAlert = (title, message) => {
-    setAlertDialog({ isOpen: true, title, message });
-  };
+      const showAlert = (title, message) => {
+        setAlertDialog({ isOpen: true, title, message });
+      };
 
-  // ตรวจสอบสินค้าใกล้หมด
-  const lowStockItems = useMemo(() => {
-    return products.filter(p => p.current_stock <= p.min_stock_alert);
-  }, [products]);
+      const lowStockItems = useMemo(() => {
+        return products.filter(p => p.current_stock <= p.min_stock_alert);
+      }, [products]);
 
-  // คำนวณยอดรวมตะกร้า
-  const cartTotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + (item.selling_price * item.qty), 0);
-  }, [cart]);
+      const cartTotal = useMemo(() => {
+        return cart.reduce((sum, item) => sum + (item.selling_price * item.qty), 0);
+      }, [cart]);
 
-  const addToCart = (product) => {
-    if (product.current_stock <= 0) {
-      showAlert('สินค้าหมด', `สินค้า "${product.name}" ในคลังหมดแล้ว`);
-      return;
-    }
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        if (existing.qty >= product.current_stock) {
-          showAlert('สต็อกไม่พอ', `มีสินค้าอยู่ในคลังเพียง ${product.current_stock} ชิ้น`);
-          return prev;
+      const addToCart = (product) => {
+        if (product.current_stock <= 0) {
+          showAlert('สินค้าหมด', `สินค้า "${product.name}" ในคลังหมดแล้ว`);
+          return;
         }
-        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
-      }
-      return [...prev, { ...product, qty: 1 }];
-    });
-  };
-
-  const updateCartQty = (id, delta) => {
-    setCart(prev => {
-      return prev.map(item => {
-        if (item.id === id) {
-          const product = products.find(p => p.id === id);
-          const newQty = item.qty + delta;
-          if (newQty <= 0) return null;
-          if (product && newQty > product.current_stock) {
-            showAlert('สต็อกไม่พอ', `มีสินค้าอยู่ในคลังเพียง ${product.current_stock} ชิ้น`);
-            return item;
+        setCart(prev => {
+          const existing = prev.find(item => item.id === product.id);
+          if (existing) {
+            if (existing.qty >= product.current_stock) {
+              showAlert('สต็อกไม่พอ', `มีสินค้าอยู่ในคลังเพียง ${product.current_stock} ชิ้น`);
+              return prev;
+            }
+            return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
           }
-          return { ...item, qty: newQty };
+          return [...prev, { ...product, qty: 1 }];
+        });
+      };
+
+      const updateCartQty = (id, delta) => {
+        setCart(prev => {
+          return prev.map(item => {
+            if (item.id === id) {
+              const product = products.find(p => p.id === id);
+              const newQty = item.qty + delta;
+              if (newQty <= 0) return null;
+              if (product && newQty > product.current_stock) {
+                showAlert('สต็อกไม่พอ', `มีสินค้าอยู่ในคลังเพียง ${product.current_stock} ชิ้น`);
+                return item;
+              }
+              return { ...item, qty: newQty };
+            }
+            return item;
+          }).filter(Boolean);
+        });
+      };
+
+      const handleCheckout = () => {
+        if (cart.length === 0) return;
+
+        if (paymentMethod === 'cash') {
+          const received = parseFloat(cashReceived) || 0;
+          if (received < cartTotal) {
+            showAlert('จำนวนเงินไม่พอ', 'เงินสดที่รับมาน้อยกว่ายอดชำระ');
+            return;
+          }
         }
-        return item;
-      }).filter(Boolean);
-    });
-  };
 
-  const handleCheckout = () => {
-    if (cart.length === 0) return;
+        if (paymentMethod === 'debt' && !debtorName.trim()) {
+          showAlert('กรุณากรอกชื่อ', 'กรุณาระบุชื่อผู้ติดหนี้');
+          return;
+        }
 
-    if (paymentMethod === 'cash') {
-      const received = parseFloat(cashReceived) || 0;
-      if (received < cartTotal) {
-        showAlert('จำนวนเงินไม่พอ', 'เงินสดที่รับมาน้อยกว่ายอดชำระ');
-        return;
-      }
-    }
-
-    if (paymentMethod === 'debt' && !debtorName.trim()) {
-      showAlert('กรุณากรอกชื่อ', 'กรุณาระบุชื่อผู้ติดหนี้');
-      return;
-    }
-
-    // ตัดสต็อกสินค้า
-    const updatedProducts = products.map(p => {
-      const cartItem = cart.find(c => c.id === p.id);
-      if (cartItem) {
-        return { ...p, current_stock: Math.max(0, p.current_stock - cartItem.qty) };
-      }
-      return p;
-    });
-
-    setProducts(updatedProducts);
-
-    // คำนวณต้นทุนและกำไรบิลนี้
-    const totalCost = cart.reduce((sum, item) => sum + (item.cost_price * item.qty), 0);
-    const profit = cartTotal - totalCost;
-
-    const newSale = {
-      id: 'BILL-' + Date.now(),
-      date: new Date().toISOString(),
-      items: cart,
-      total_amount: cartTotal,
-      total_cost: totalCost,
-      profit: profit,
-      payment_method: paymentMethod,
-      cash_received: paymentMethod === 'cash' ? parseFloat(cashReceived) : cartTotal,
-      change: paymentMethod === 'cash' ? (parseFloat(cashReceived) - cartTotal) : 0,
-      debtor_name: paymentMethod === 'debt' ? debtorName.trim() : null
-    };
-
-    setSalesHistory([newSale, ...salesHistory]);
-
-    // บันทึกลงสมุดหนี้ถ้าเลือกติดหนี้
-    if (paymentMethod === 'debt') {
-      const debtor = debtors.find(d => d.name.toLowerCase() === debtorName.trim().toLowerCase());
-      if (debtor) {
-        setDebtors(debtors.map(d => d.id === debtor.id ? { ...d, total_debt: d.total_debt + cartTotal, status: 'unpaid' } : d));
-      } else {
-        setDebtors([...debtors, {
-          id: 'DEBT-' + Date.now(),
-          name: debtorName.trim(),
-          total_debt: cartTotal,
-          status: 'unpaid',
-          createdAt: new Date().toISOString()
-        }]);
-      }
-    }
-
-    // รีเซ็ตค่า
-    setCart([]);
-    setIsCheckoutOpen(false);
-    setCashReceived('');
-    setDebtorName('');
-    showAlert('บันทึกการขายสำเร็จ', 'ทำรายการขายและตัดสต็อกเรียบร้อยแล้ว');
-  };
-
-  const requestPassword = (title, action) => {
-    setPasswordModal({ isOpen: true, title, action });
-    setPasswordInput('');
-  };
-
-  const verifyPassword = () => {
-    if (passwordInput === adminPassword) {
-      if (passwordModal.action) passwordModal.action();
-      setPasswordModal({ isOpen: false, title: '', action: null });
-      setPasswordInput('');
-    } else {
-      showAlert('รหัสผ่านไม่ถูกต้อง', 'กรุณาลองใหม่อีกครั้ง (รหัสเริ่มต้นคือ 4497)');
-    }
-  };
-
-  const handleDeleteProduct = (productId) => {
-    requestPassword('ยืนยันการลบสินค้า', () => {
-      setProducts(products.filter(p => p.id !== productId));
-      showAlert('สำเร็จ', 'ลบสินค้าเรียบร้อยแล้ว');
-    });
-  };
-
-  const handleRestockPack = () => {
-    if (!restockProduct) return;
-    const packs = parseInt(restockData.packs) || 0;
-    const piecesPerPack = parseInt(restockData.piecesPerPack) || 1;
-    const pricePerPack = parseFloat(restockData.pricePerPack) || 0;
-
-    if (packs <= 0 || pricePerPack <= 0) {
-      showAlert('ข้อมูลไม่ถูกต้อง', 'กรุณากรอกจำนวนแพ็คและราคาให้ถูกต้อง');
-      return;
-    }
-
-    const totalNewPieces = packs * piecesPerPack;
-    const newCostPerPiece = pricePerPack / piecesPerPack;
-
-    setProducts(products.map(p => {
-      if (p.id === restockProduct.id) {
-        return {
-          ...p,
-          current_stock: p.current_stock + totalNewPieces,
-          cost_price: Math.round(newCostPerPiece * 100) / 100 // ปรับต้นทุนเฉลี่ย
-        };
-      }
-      return p;
-    }));
-
-    setRestockProduct(null);
-    setRestockData({ packs: 1, piecesPerPack: 12, pricePerPack: '' });
-    showAlert('บันทึกสำเร็จ', `เพิ่มสต็อก ${restockProduct.name} จำนวน ${totalNewPieces} ชิ้นเรียบร้อยแล้ว`);
-  };
-
-  const handleSaveBulkProducts = () => {
-    const validItems = bulkItems.filter(item => item.name.trim() !== '');
-    if (validItems.length === 0) {
-      showAlert('ข้อมูลว่างเปล่า', 'กรุณากรอกชื่อสินค้าอย่างน้อย 1 รายการ');
-      return;
-    }
-
-    const newProducts = validItems.map((item, idx) => ({
-      id: 'PROD-' + (Date.now() + idx),
-      name: item.name.trim(),
-      category: item.category,
-      cost_price: parseFloat(item.cost_price) || 0,
-      selling_price: parseFloat(item.selling_price) || 0,
-      current_stock: parseInt(item.current_stock) || 0,
-      min_stock_alert: parseInt(item.min_stock_alert) || 5
-    }));
-
-    setProducts([...products, ...newProducts]);
-    setIsBulkAddOpen(false);
-    setBulkItems([{ name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }]);
-    showAlert('สำเร็จ', `เพิ่มสินค้าใหม่ ${newProducts.length} รายการเรียบร้อยแล้ว`);
-  };
-
-  const handleDeleteBill = (billId) => {
-    requestPassword('ยืนยันการลบบิลขาย', () => {
-      const bill = salesHistory.find(b => b.id === billId);
-      if (bill) {
-        // คืนสินค้าเข้าคลัง
-        const restoredProducts = products.map(p => {
-          const item = bill.items.find(i => i.id === p.id);
-          if (item) {
-            return { ...p, current_stock: p.current_stock + item.qty };
+        const updatedProducts = products.map(p => {
+          const cartItem = cart.find(c => c.id === p.id);
+          if (cartItem) {
+            return { ...p, current_stock: Math.max(0, p.current_stock - cartItem.qty) };
           }
           return p;
         });
-        setProducts(restoredProducts);
-        setSalesHistory(salesHistory.filter(b => b.id !== billId));
-        showAlert('สำเร็จ', 'ลบบิลและคืนสต็อกสินค้าเข้าคลังเรียบร้อยแล้ว');
-      }
-    });
-  };
 
-  const handleMarkDebtPaid = (debtorId) => {
-    setDebtors(debtors.map(d => {
-      if (d.id === debtorId) {
-        return { ...d, status: 'paid', paidAt: new Date().toISOString() };
-      }
-      return d;
-    }));
-    showAlert('ชำระหนี้แล้ว', 'อัปเดตสถานะเป็น "ชำระเงินหรือหนี้แล้ว" เรียบร้อยแล้ว');
-  };
+        setProducts(updatedProducts);
 
-  const handleDeleteDebtor = (debtorId) => {
-    requestPassword('ยืนยันการลบรายชื่อติดหนี้', () => {
-      setDebtors(debtors.filter(d => d.id !== debtorId));
-      showAlert('สำเร็จ', 'ลบรายการติดหนี้เรียบร้อยแล้ว');
-    });
-  };
+        const totalCost = cart.reduce((sum, item) => sum + (item.cost_price * item.qty), 0);
+        const profit = cartTotal - totalCost;
 
-  const handleExportData = () => {
-    try {
-      const fullData = {
-        products,
-        salesHistory,
-        debtors,
-        adminPassword,
-        qrCodeImage,
-        backupDate: new Date().toISOString()
+        const newSale = {
+          id: 'BILL-' + Date.now(),
+          date: new Date().toISOString(),
+          items: cart,
+          total_amount: cartTotal,
+          total_cost: totalCost,
+          profit: profit,
+          payment_method: paymentMethod,
+          cash_received: paymentMethod === 'cash' ? parseFloat(cashReceived) : cartTotal,
+          change: paymentMethod === 'cash' ? (parseFloat(cashReceived) - cartTotal) : 0,
+          debtor_name: paymentMethod === 'debt' ? debtorName.trim() : null
+        };
+
+        setSalesHistory([newSale, ...salesHistory]);
+
+        if (paymentMethod === 'debt') {
+          const debtor = debtors.find(d => d.name.toLowerCase() === debtorName.trim().toLowerCase());
+          if (debtor) {
+            setDebtors(debtors.map(d => d.id === debtor.id ? { ...d, total_debt: d.total_debt + cartTotal, status: 'unpaid' } : d));
+          } else {
+            setDebtors([...debtors, {
+              id: 'DEBT-' + Date.now(),
+              name: debtorName.trim(),
+              total_debt: cartTotal,
+              status: 'unpaid',
+              createdAt: new Date().toISOString()
+            }]);
+          }
+        }
+
+        setCart([]);
+        setIsCheckoutOpen(false);
+        setCashReceived('');
+        setDebtorName('');
+        showAlert('บันทึกการขายสำเร็จ', 'ทำรายการขายและตัดสต็อกเรียบร้อยแล้ว');
       };
-      const jsonStr = JSON.stringify(fullData, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Grocery_Backup_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      showAlert('สำรองข้อมูลสำเร็จ', 'ดาวน์โหลดไฟล์ข้อมูลสำรองเรียบร้อยแล้ว');
-    } catch (err) {
-      showAlert('ผิดพลาด', 'ไม่สามารถส่งออกข้อมูลได้');
-    }
-  };
 
-  const fileInputRef = useRef(null);
-  const handleImportData = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+      const requestPassword = (title, action) => {
+        setPasswordModal({ isOpen: true, title, action });
+        setPasswordInput('');
+      };
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const imported = JSON.parse(event.target.result);
-        if (imported.products) setProducts(imported.products);
-        if (imported.salesHistory) setSalesHistory(imported.salesHistory);
-        if (imported.debtors) setDebtors(imported.debtors);
-        if (imported.adminPassword) setAdminPassword(imported.adminPassword);
-        if (imported.qrCodeImage) setQrCodeImage(imported.qrCodeImage);
+      const verifyPassword = () => {
+        if (passwordInput === adminPassword) {
+          if (passwordModal.action) passwordModal.action();
+          setPasswordModal({ isOpen: false, title: '', action: null });
+          setPasswordInput('');
+        } else {
+          showAlert('รหัสผ่านไม่ถูกต้อง', 'กรุณาลองใหม่อีกครั้ง (รหัสเริ่มต้นคือ 4497)');
+        }
+      };
 
-        showAlert('กู้คืนข้อมูลสำเร็จ', 'นำเข้าข้อมูลทั้งหมดเข้าสู่ระบบเรียบร้อยแล้ว');
-        setIsSettingsOpen(false);
-      } catch (err) {
-        showAlert('ไฟล์ไม่ถูกต้อง', 'ไม่สามารถอ่านไฟล์ JSON ได้');
-      }
-    };
-    reader.readAsText(file);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+      const handleDeleteProduct = (productId) => {
+        requestPassword('ยืนยันการลบสินค้า', () => {
+          setProducts(products.filter(p => p.id !== productId));
+          showAlert('สำเร็จ', 'ลบสินค้าเรียบร้อยแล้ว');
+        });
+      };
 
-  const totalInventoryCost = useMemo(() => {
-    return products.reduce((sum, p) => sum + (p.cost_price * p.current_stock), 0);
-  }, [products]);
+      const handleRestockPack = () => {
+        if (!restockProduct) return;
+        const packs = parseInt(restockData.packs) || 0;
+        const piecesPerPack = parseInt(restockData.piecesPerPack) || 1;
+        const pricePerPack = parseFloat(restockData.pricePerPack) || 0;
 
-  const expectedProfit = useMemo(() => {
-    return products.reduce((sum, p) => sum + ((p.selling_price - p.cost_price) * p.current_stock), 0);
-  }, [products]);
+        if (packs <= 0 || pricePerPack <= 0) {
+          showAlert('ข้อมูลไม่ถูกต้อง', 'กรุณากรอกจำนวนแพ็คและราคาให้ถูกต้อง');
+          return;
+        }
 
-  // สถิติสินค้าขายดี และ ขายไม่ค่อยดี (คำนวณจากยอดขายจริง)
-  const productPerformance = useMemo(() => {
-    const salesCount = {};
-    salesHistory.forEach(bill => {
-      bill.items.forEach(item => {
-        salesCount[item.id] = (salesCount[item.id] || 0) + item.qty;
+        const totalNewPieces = packs * piecesPerPack;
+        const newCostPerPiece = pricePerPack / piecesPerPack;
+
+        setProducts(products.map(p => {
+          if (p.id === restockProduct.id) {
+            return {
+              ...p,
+              current_stock: p.current_stock + totalNewPieces,
+              cost_price: Math.round(newCostPerPiece * 100) / 100
+            };
+          }
+          return p;
+        }));
+
+        setRestockProduct(null);
+        setRestockData({ packs: 1, piecesPerPack: 12, pricePerPack: '' });
+        showAlert('บันทึกสำเร็จ', `เพิ่มสต็อก ${restockProduct.name} จำนวน ${totalNewPieces} ชิ้นเรียบร้อยแล้ว`);
+      };
+
+      const handleSaveBulkProducts = () => {
+        const validItems = bulkItems.filter(item => item.name.trim() !== '');
+        if (validItems.length === 0) {
+          showAlert('ข้อมูลว่างเปล่า', 'กรุณากรอกชื่อสินค้าอย่างน้อย 1 รายการ');
+          return;
+        }
+
+        const newProducts = validItems.map((item, idx) => ({
+          id: 'PROD-' + (Date.now() + idx),
+          name: item.name.trim(),
+          category: item.category,
+          cost_price: parseFloat(item.cost_price) || 0,
+          selling_price: parseFloat(item.selling_price) || 0,
+          current_stock: parseInt(item.current_stock) || 0,
+          min_stock_alert: parseInt(item.min_stock_alert) || 5
+        }));
+
+        setProducts([...products, ...newProducts]);
+        setIsBulkAddOpen(false);
+        setBulkItems([{ name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }]);
+        showAlert('สำเร็จ', `เพิ่มสินค้าใหม่ ${newProducts.length} รายการเรียบร้อยแล้ว`);
+      };
+
+      const handleDeleteBill = (billId) => {
+        requestPassword('ยืนยันการลบบิลขาย', () => {
+          const bill = salesHistory.find(b => b.id === billId);
+          if (bill) {
+            const restoredProducts = products.map(p => {
+              const item = bill.items.find(i => i.id === p.id);
+              if (item) {
+                return { ...p, current_stock: p.current_stock + item.qty };
+              }
+              return p;
+            });
+            setProducts(restoredProducts);
+            setSalesHistory(salesHistory.filter(b => b.id !== billId));
+            showAlert('สำเร็จ', 'ลบบิลและคืนสต็อกสินค้าเข้าคลังเรียบร้อยแล้ว');
+          }
+        });
+      };
+
+      const handleMarkDebtPaid = (debtorId) => {
+        setDebtors(debtors.map(d => {
+          if (d.id === debtorId) {
+            return { ...d, status: 'paid', paidAt: new Date().toISOString() };
+          }
+          return d;
+        }));
+        showAlert('ชำระหนี้แล้ว', 'อัปเดตสถานะเป็น "ชำระเงินหรือหนี้แล้ว" เรียบร้อยแล้ว');
+      };
+
+      const handleDeleteDebtor = (debtorId) => {
+        requestPassword('ยืนยันการลบรายชื่อติดหนี้', () => {
+          setDebtors(debtors.filter(d => d.id !== debtorId));
+          showAlert('สำเร็จ', 'ลบรายการติดหนี้เรียบร้อยแล้ว');
+        });
+      };
+
+      const handleExportData = () => {
+        try {
+          const fullData = {
+            products,
+            salesHistory,
+            debtors,
+            adminPassword,
+            qrCodeImage,
+            backupDate: new Date().toISOString()
+          };
+          const jsonStr = JSON.stringify(fullData, null, 2);
+          const blob = new Blob([jsonStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `Grocery_Backup_${new Date().toISOString().split('T')[0]}.json`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          showAlert('สำรองข้อมูลสำเร็จ', 'ดาวน์โหลดไฟล์ข้อมูลสำรองเรียบร้อยแล้ว');
+        } catch (err) {
+          showAlert('ผิดพลาด', 'ไม่สามารถส่งออกข้อมูลได้');
+        }
+      };
+
+      const fileInputRef = useRef(null);
+      const handleImportData = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const imported = JSON.parse(event.target.result);
+            if (imported.products) setProducts(imported.products);
+            if (imported.salesHistory) setSalesHistory(imported.salesHistory);
+            if (imported.debtors) setDebtors(imported.debtors);
+            if (imported.adminPassword) setAdminPassword(imported.adminPassword);
+            if (imported.qrCodeImage) setQrCodeImage(imported.qrCodeImage);
+
+            showAlert('กู้คืนข้อมูลสำเร็จ', 'นำเข้าข้อมูลทั้งหมดเข้าสู่ระบบเรียบร้อยแล้ว');
+            setIsSettingsOpen(false);
+          } catch (err) {
+            showAlert('ไฟล์ไม่ถูกต้อง', 'ไม่สามารถอ่านไฟล์ JSON ได้');
+          }
+        };
+        reader.readAsText(file);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      };
+
+      const totalInventoryCost = useMemo(() => {
+        return products.reduce((sum, p) => sum + (p.cost_price * p.current_stock), 0);
+      }, [products]);
+
+      const expectedProfit = useMemo(() => {
+        return products.reduce((sum, p) => sum + ((p.selling_price - p.cost_price) * p.current_stock), 0);
+      }, [products]);
+
+      const productPerformance = useMemo(() => {
+        const salesCount = {};
+        salesHistory.forEach(bill => {
+          bill.items.forEach(item => {
+            salesCount[item.id] = (salesCount[item.id] || 0) + item.qty;
+          });
+        });
+
+        const list = products.map(p => ({
+          ...p,
+          soldQty: salesCount[p.id] || 0
+        }));
+
+        const sortedBest = [...list].sort((a, b) => b.soldQty - a.soldQty);
+        const sortedSlow = [...list].sort((a, b) => a.soldQty - b.soldQty);
+
+        return {
+          bestSellers: sortedBest.filter(p => p.soldQty > 0).slice(0, 5),
+          slowMovers: sortedSlow.slice(0, 5)
+        };
+      }, [products, salesHistory]);
+
+      const categories = ['ทั้งหมด', 'เครื่องดื่มแอลกอฮอล์', 'บุหรี่/ไฟแช็ก', 'เครื่องดื่มชูกำลัง/กาแฟ'];
+
+      const filteredProducts = products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = categoryFilter === 'ทั้งหมด' || p.category === categoryFilter;
+        return matchesSearch && matchesCategory;
       });
-    });
 
-    const list = products.map(p => ({
-      ...p,
-      soldQty: salesCount[p.id] || 0
-    }));
-
-    const sortedBest = [...list].sort((a, b) => b.soldQty - a.soldQty);
-    const sortedSlow = [...list].sort((a, b) => a.soldQty - b.soldQty);
-
-    return {
-      bestSellers: sortedBest.filter(p => p.soldQty > 0).slice(0, 5),
-      slowMovers: sortedSlow.slice(0, 5)
-    };
-  }, [products, salesHistory]);
-
-  const categories = ['ทั้งหมด', 'เครื่องดื่มแอลกอฮอล์', 'บุหรี่/ไฟแช็ก', 'เครื่องดื่มชูกำลัง/กาแฟ'];
-
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'ทั้งหมด' || p.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
-
-  return (
-    <div className="min-h-screen bg-pink-50 text-gray-800 font-sans pb-16">
-      
-      {/* Top Fixed Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 bg-white border-b-2 border-pink-200 shadow-md z-40">
-        <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-pink-500 text-white p-2 rounded-xl shadow">
-              <ShoppingCart className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-lg font-black text-pink-600 leading-tight">ร้านของชำพาสเทล</h1>
-              <p className="text-xs text-pink-400 font-bold">ระบบสต็อก & POS หน้าร้าน</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Low stock Notification Bell */}
-            <button 
-              onClick={() => setIsLowStockModalOpen(true)}
-              className="relative p-2 rounded-xl bg-pink-100 text-pink-700 hover:bg-pink-200 transition"
-              title="สินค้าใกล้หมด"
-            >
-              <Bell className="h-5 w-5" />
-              {lowStockItems.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-black px-1.5 py-0.5 rounded-full animate-bounce">
-                  {lowStockItems.length}
-                </span>
-              )}
-            </button>
-
-            {/* Settings button */}
-            <button 
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="ตั้งค่า"
-            >
-              <Settings className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Tab Navigation Buttons */}
-        <nav className="max-w-6xl mx-auto px-2 flex border-t border-pink-100 bg-pink-50/50 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('pos')}
-            className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-1.5 whitespace-nowrap border-b-2 transition ${
-              activeTab === 'pos' 
-                ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg' 
-                : 'border-transparent text-gray-600 hover:text-pink-500'
-            }`}
-          >
-            <ShoppingCart className="h-4 w-4" /> ขายสินค้า
-          </button>
-
-          <button
-            onClick={() => setActiveTab('inventory')}
-            className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-1.5 whitespace-nowrap border-b-2 transition ${
-              activeTab === 'inventory' 
-                ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg' 
-                : 'border-transparent text-gray-600 hover:text-pink-500'
-            }`}
-          >
-            <Package className="h-4 w-4" /> คลังสินค้า ({products.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-1.5 whitespace-nowrap border-b-2 transition ${
-              activeTab === 'history' 
-                ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg' 
-                : 'border-transparent text-gray-600 hover:text-pink-500'
-            }`}
-          >
-            <History className="h-4 w-4" /> ประวัติการขาย
-          </button>
-
-          <button
-            onClick={() => setActiveTab('debtors')}
-            className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-1.5 whitespace-nowrap border-b-2 transition ${
-              activeTab === 'debtors' 
-                ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg' 
-                : 'border-transparent text-gray-600 hover:text-pink-500'
-            }`}
-          >
-            <BookOpen className="h-4 w-4" /> สมุดเซ็นหนี้
-          </button>
-        </nav>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="max-w-6xl mx-auto px-4 pt-28 pb-10">
-
-        {/* ================= TAB 1: POS / SALES ================= */}
-        {activeTab === 'pos' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Products List & Search */}
-            <div className="lg:col-span-2 space-y-4">
-              
-              {/* Search & Category Filter */}
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-pink-200 space-y-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="ค้นหาสินค้า (ชื่อ, ยี่ห้อ)..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-pink-400 font-bold bg-pink-50/30 text-gray-800"
-                  />
+      return (
+        <div>
+          {}
+          <header className="fixed top-0 left-0 right-0 bg-white border-b-2 border-pink-200 shadow-md z-40">
+            <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="bg-pink-500 text-white p-2.5 rounded-xl shadow">
+                  <i className="fa-solid fa-cart-shopping text-xl"></i>
                 </div>
-
-                {/* Category Pills */}
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {categories.map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setCategoryFilter(cat)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
-                        categoryFilter === cat 
-                          ? 'bg-pink-500 text-white shadow' 
-                          : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                <div>
+                  <h1 className="text-lg font-black text-pink-600 leading-tight">ร้านของชำพาสเทล</h1>
+                  <p className="text-xs text-pink-400 font-bold">ระบบสต็อก & POS หน้าร้าน</p>
                 </div>
               </div>
 
-              {/* Products Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {filteredProducts.map(product => {
-                  const isLow = product.current_stock <= product.min_stock_alert;
-                  const isOut = product.current_stock <= 0;
-
-                  return (
-                    <button
-                      key={product.id}
-                      onClick={() => addToCart(product)}
-                      disabled={isOut}
-                      className={`p-3 rounded-2xl border-2 text-left transition transform active:scale-95 flex flex-col justify-between h-32 relative shadow-sm ${
-                        isOut 
-                          ? 'bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed' 
-                          : isLow 
-                          ? 'bg-amber-50 border-amber-300 hover:border-amber-400' 
-                          : 'bg-white border-pink-200 hover:border-pink-400'
-                      }`}
-                    >
-                      <div>
-                        <span className="text-[10px] font-bold text-gray-400 block truncate">{product.category}</span>
-                        <h3 className="font-bold text-sm text-gray-800 line-clamp-2 leading-tight">{product.name}</h3>
-                      </div>
-
-                      <div className="mt-auto flex items-end justify-between w-full">
-                        <div>
-                          <p className="text-xs text-gray-500">สต็อก: <span className={`font-black ${isLow ? 'text-amber-600' : 'text-gray-700'}`}>{product.current_stock}</span></p>
-                          <p className="text-base font-black text-pink-600">฿{product.selling_price}</p>
-                        </div>
-                        <div className="bg-pink-500 text-white p-1.5 rounded-lg">
-                          <Plus className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Cart & Order Summary */}
-            <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-pink-200 flex flex-col h-fit sticky top-28">
-              <h2 className="text-lg font-black text-pink-700 border-b border-pink-100 pb-3 mb-3 flex items-center justify-between">
-                <span>รายการสั่งซื้อ</span>
-                <span className="text-xs bg-pink-100 text-pink-600 px-2.5 py-1 rounded-full">{cart.length} รายการ</span>
-              </h2>
-
-              {cart.length === 0 ? (
-                <div className="py-12 text-center text-gray-400">
-                  <ShoppingCart className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm font-bold">ยังไม่ได้เลือกสินค้า</p>
-                  <p className="text-xs">กดเลือกรายการสินค้าทางซ้ายมือ</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-                  {cart.map(item => (
-                    <div key={item.id} className="flex items-center justify-between p-2 rounded-xl bg-pink-50 border border-pink-100">
-                      <div className="flex-1 pr-2">
-                        <h4 className="font-bold text-xs text-gray-800 truncate">{item.name}</h4>
-                        <p className="text-xs text-pink-600 font-bold">฿{item.selling_price} x {item.qty} = ฿{item.selling_price * item.qty}</p>
-                      </div>
-
-                      <div className="flex items-center gap-1 bg-white border border-pink-200 rounded-lg p-0.5">
-                        <button onClick={() => updateCartQty(item.id, -1)} className="px-2 py-0.5 font-bold text-gray-600 hover:bg-pink-100 rounded">-</button>
-                        <span className="px-2 font-black text-xs text-pink-600">{item.qty}</span>
-                        <button onClick={() => updateCartQty(item.id, 1)} className="px-2 py-0.5 font-bold text-gray-600 hover:bg-pink-100 rounded">+</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Total & Checkout Button */}
-              <div className="border-t-2 border-pink-100 pt-4 mt-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-gray-600">ราคารวมทั้งสิ้น:</span>
-                  <span className="text-2xl font-black text-pink-600">฿{cartTotal.toLocaleString()}</span>
-                </div>
-
-                <button
-                  onClick={() => setIsCheckoutOpen(true)}
-                  disabled={cart.length === 0}
-                  className={`w-full py-3 rounded-xl font-black text-white text-base shadow-md transition ${
-                    cart.length > 0 
-                      ? 'bg-pink-500 hover:bg-pink-600 active:scale-95' 
-                      : 'bg-gray-300 cursor-not-allowed'
-                  }`}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setIsLowStockModalOpen(true)}
+                  className="relative p-2.5 rounded-xl bg-pink-100 text-pink-700 hover:bg-pink-200 transition"
+                  title="สินค้าใกล้หมด"
                 >
-                  บันทึกการขาย (ชำระเงิน)
+                  <i className="fa-solid fa-bell text-lg"></i>
+                  {lowStockItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-black px-1.5 py-0.5 rounded-full animate-bounce">
+                      {lowStockItems.length}
+                    </span>
+                  )}
+                </button>
+
+                <button 
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+                  title="ตั้งค่า"
+                >
+                  <i className="fa-solid fa-gear text-lg"></i>
                 </button>
               </div>
             </div>
 
-          </div>
-        )}
+            <nav className="max-w-6xl mx-auto px-2 flex border-t border-pink-100 bg-pink-50/50 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab('pos')}
+                className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-2 whitespace-nowrap border-b-2 transition ${
+                  activeTab === 'pos' 
+                    ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-pink-500'
+                }`}
+              >
+                <i className="fa-solid fa-cash-register"></i> ขายสินค้า
+              </button>
 
-        {/* ================= TAB 2: INVENTORY ================= */}
-        {activeTab === 'inventory' && (
-          <div className="space-y-6">
-            
-            {/* Inventory Financial Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-pink-200 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-gray-500">มูลค่าต้นทุนสินค้าในคลังรวม</p>
-                  <h3 className="text-2xl font-black text-pink-600">฿{totalInventoryCost.toLocaleString()}</h3>
-                </div>
-                <div className="bg-pink-100 p-3 rounded-xl text-pink-600">
-                  <Package className="h-8 w-8" />
-                </div>
-              </div>
+              <button
+                onClick={() => setActiveTab('inventory')}
+                className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-2 whitespace-nowrap border-b-2 transition ${
+                  activeTab === 'inventory' 
+                    ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-pink-500'
+                }`}
+              >
+                <i className="fa-solid fa-box"></i> คลังสินค้า ({products.length})
+              </button>
 
-              <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-green-200 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-green-600">กำไรที่คาดการณ์ (หากขายหมด)</p>
-                  <h3 className="text-2xl font-black text-green-600">฿{expectedProfit.toLocaleString()}</h3>
-                </div>
-                <div className="bg-green-100 p-3 rounded-xl text-green-600">
-                  <TrendingUp className="h-8 w-8" />
-                </div>
-              </div>
-            </div>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-2 whitespace-nowrap border-b-2 transition ${
+                  activeTab === 'history' 
+                    ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-pink-500'
+                }`}
+              >
+                <i className="fa-solid fa-clock-rotate-left"></i> ประวัติการขาย
+              </button>
 
-            {/* Inventory Actions Bar */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-pink-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="ค้นหาในคลัง..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border-2 border-pink-200 rounded-xl text-sm font-bold bg-pink-50/30"
-                />
-              </div>
+              <button
+                onClick={() => setActiveTab('debtors')}
+                className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-2 whitespace-nowrap border-b-2 transition ${
+                  activeTab === 'debtors' 
+                    ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-pink-500'
+                }`}
+              >
+                <i className="fa-solid fa-book"></i> สมุดเซ็นหนี้
+              </button>
+            </nav>
+          </header>
 
-              <div className="flex gap-2 w-full sm:w-auto">
-                <button
-                  onClick={() => setIsBulkAddOpen(true)}
-                  className="flex-1 sm:flex-none px-4 py-2 bg-pink-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1.5 shadow hover:bg-pink-600"
-                >
-                  <Plus className="h-4 w-4" /> เพิ่มสินค้า (หลายรายการ)
-                </button>
-              </div>
-            </div>
+          {}
+          <main className="max-w-6xl mx-auto px-4 pt-28 pb-10">
 
-            {/* Inventory List (Cards for Mobile) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredProducts.map(product => {
-                const isLow = product.current_stock <= product.min_stock_alert;
+            {/* TAB 1: POS */}
+            {activeTab === 'pos' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-pink-200 space-y-3">
+                    <div className="relative">
+                      <i className="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-gray-400"></i>
+                      <input
+                        type="text"
+                        placeholder="ค้นหาสินค้า (ชื่อ, ยี่ห้อ)..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-pink-400 font-bold bg-pink-50/30 text-gray-800"
+                      />
+                    </div>
 
-                return (
-                  <div key={product.id} className="bg-white p-4 rounded-2xl border-2 border-pink-100 shadow-sm space-y-3 relative">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="text-[10px] font-bold text-pink-500 bg-pink-50 px-2 py-0.5 rounded-full">{product.category}</span>
-                        <h3 className="font-bold text-gray-800 text-base mt-1">{product.name}</h3>
-                      </div>
-                      <div className="flex gap-1">
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {categories.map(cat => (
                         <button
-                          onClick={() => setEditingProduct(product)}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
-                          title="แก้ไข"
+                          key={cat}
+                          onClick={() => setCategoryFilter(cat)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                            categoryFilter === cat 
+                              ? 'bg-pink-500 text-white shadow' 
+                              : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
+                          }`}
                         >
-                          <Edit className="h-4 w-4" />
+                          {cat}
                         </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {filteredProducts.map(product => {
+                      const isLow = product.current_stock <= product.min_stock_alert;
+                      const isOut = product.current_stock <= 0;
+
+                      return (
                         <button
-                          onClick={() => handleDeleteProduct(product.id)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
-                          title="ลบ"
+                          key={product.id}
+                          onClick={() => addToCart(product)}
+                          disabled={isOut}
+                          className={`p-3 rounded-2xl border-2 text-left transition transform active:scale-95 flex flex-col justify-between h-32 relative shadow-sm ${
+                            isOut 
+                              ? 'bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed' 
+                              : isLow 
+                              ? 'bg-amber-50 border-amber-300 hover:border-amber-400' 
+                              : 'bg-white border-pink-200 hover:border-pink-400'
+                          }`}
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 bg-pink-50/50 p-2 rounded-xl text-center text-xs">
-                      <div>
-                        <p className="text-gray-400">ทุน</p>
-                        <p className="font-bold text-gray-700">฿{product.cost_price}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400">ราคาขาย</p>
-                        <p className="font-bold text-pink-600">฿{product.selling_price}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400">กำไร/ชิ้น</p>
-                        <p className="font-bold text-green-600">฿{product.selling_price - product.cost_price}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <div>
-                        <span className="text-xs text-gray-500">คงเหลือ: </span>
-                        <span className={`text-base font-black ${isLow ? 'text-red-600' : 'text-gray-800'}`}>
-                          {product.current_stock} ชิ้น
-                        </span>
-                      </div>
-
-                      <button
-                        onClick={() => setRestockProduct(product)}
-                        className="px-3 py-1.5 bg-green-500 text-white font-bold text-xs rounded-xl flex items-center gap-1 shadow hover:bg-green-600"
-                      >
-                        <Truck className="h-3.5 w-3.5" /> รับเข้า (แพ็ค)
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-          </div>
-        )}
-
-        {/* ================= TAB 3: SALES HISTORY & ANALYTICS ================= */}
-        {activeTab === 'history' && (
-          <div className="space-y-6">
-            
-            {/* Analytics Dashboard */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              {/* Best Sellers */}
-              <div className="bg-white p-4 rounded-2xl border-2 border-pink-200 shadow-sm">
-                <h3 className="font-black text-pink-700 text-base mb-3 flex items-center gap-1.5">
-                  <TrendingUp className="h-5 w-5 text-green-500" /> สินค้าขายดี Top 5
-                </h3>
-                {productPerformance.bestSellers.length === 0 ? (
-                  <p className="text-xs text-gray-400 py-4 text-center">ยังไม่มีข้อมูลการขาย</p>
-                ) : (
-                  <div className="space-y-2">
-                    {productPerformance.bestSellers.map((item, idx) => (
-                      <div key={item.id} className="flex justify-between items-center text-xs p-2 rounded-xl bg-green-50 border border-green-100">
-                        <span className="font-bold text-gray-800">{idx + 1}. {item.name}</span>
-                        <span className="font-black text-green-700">ขายได้ {item.soldQty} ชิ้น</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Slow Movers */}
-              <div className="bg-white p-4 rounded-2xl border-2 border-pink-200 shadow-sm">
-                <h3 className="font-black text-pink-700 text-base mb-3 flex items-center gap-1.5">
-                  <TrendingDown className="h-5 w-5 text-amber-500" /> สินค้าขายออกช้า (ควรระวัง)
-                </h3>
-                {productPerformance.slowMovers.length === 0 ? (
-                  <p className="text-xs text-gray-400 py-4 text-center">ยังไม่มีข้อมูล</p>
-                ) : (
-                  <div className="space-y-2">
-                    {productPerformance.slowMovers.map((item, idx) => (
-                      <div key={item.id} className="flex justify-between items-center text-xs p-2 rounded-xl bg-amber-50 border border-amber-100">
-                        <span className="font-bold text-gray-800">{idx + 1}. {item.name}</span>
-                        <span className="font-bold text-amber-700">ขายได้ {item.soldQty} ชิ้น</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-            </div>
-
-            {/* Sales Bills History List */}
-            <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-black text-gray-800 text-lg">ประวัติบิลการขายทั้งหมด</h3>
-                <span className="text-xs font-bold text-pink-600 bg-pink-100 px-3 py-1 rounded-full">
-                  {salesHistory.length} บิล
-                </span>
-              </div>
-
-              {salesHistory.length === 0 ? (
-                <p className="text-center py-12 text-gray-400 font-bold">ยังไม่มีประวัติการขาย</p>
-              ) : (
-                <div className="space-y-3">
-                  {salesHistory.map(bill => (
-                    <div key={bill.id} className="p-4 rounded-2xl border border-pink-100 bg-pink-50/30 space-y-3">
-                      <div className="flex justify-between items-start border-b border-pink-100 pb-2">
-                        <div>
-                          <span className="text-xs font-black text-pink-600">{bill.id}</span>
-                          <p className="text-[10px] text-gray-400">{new Date(bill.date).toLocaleString('th-TH')}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                            bill.payment_method === 'cash' ? 'bg-green-100 text-green-700' :
-                            bill.payment_method === 'qr' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
-                          }`}>
-                            {bill.payment_method === 'cash' ? 'เงินสด' : bill.payment_method === 'qr' ? 'โอนเงิน' : `ติดหนี้ (${bill.debtor_name})`}
-                          </span>
-
-                          <button
-                            onClick={() => handleDeleteBill(bill.id)}
-                            className="p-1 text-red-500 hover:bg-red-50 rounded"
-                            title="ลบบิลและคืนสต็อก"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Items list in bill */}
-                      <div className="text-xs space-y-1">
-                        {bill.items.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-gray-700">
-                            <span>- {item.name} ({item.qty} ชิ้น)</span>
-                            <span className="font-bold">฿{item.selling_price * item.qty}</span>
+                          <div>
+                            <span className="text-[10px] font-bold text-gray-400 block truncate">{product.category}</span>
+                            <h3 className="font-bold text-sm text-gray-800 line-clamp-2 leading-tight">{product.name}</h3>
                           </div>
-                        ))}
-                      </div>
 
-                      <div className="flex justify-between items-center pt-2 border-t border-pink-100 text-sm">
-                        <span className="text-xs text-gray-500">กำไรบิลนี้: <strong className="text-green-600">฿{bill.profit}</strong></span>
-                        <span className="font-black text-pink-600">ยอดรวม: ฿{bill.total_amount.toLocaleString()}</span>
-                      </div>
+                          <div className="mt-auto flex items-end justify-between w-full">
+                            <div>
+                              <p className="text-xs text-gray-500">สต็อก: <span className={`font-black ${isLow ? 'text-amber-600' : 'text-gray-700'}`}>{product.current_stock}</span></p>
+                              <p className="text-base font-black text-pink-600">฿{product.selling_price}</p>
+                            </div>
+                            <div className="bg-pink-500 text-white p-1.5 rounded-lg flex items-center justify-center">
+                              <i className="fa-solid fa-plus text-xs"></i>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Cart Area */}
+                <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-pink-200 flex flex-col h-fit sticky top-28">
+                  <h2 className="text-lg font-black text-pink-700 border-b border-pink-100 pb-3 mb-3 flex items-center justify-between">
+                    <span><i className="fa-solid fa-basket-shopping text-pink-500 mr-2"></i>รายการสั่งซื้อ</span>
+                    <span className="text-xs bg-pink-100 text-pink-600 px-2.5 py-1 rounded-full">{cart.length} รายการ</span>
+                  </h2>
+
+                  {cart.length === 0 ? (
+                    <div className="py-12 text-center text-gray-400">
+                      <i className="fa-solid fa-cart-arrow-down text-4xl mb-2 opacity-30 block"></i>
+                      <p className="text-sm font-bold">ยังไม่ได้เลือกสินค้า</p>
+                      <p className="text-xs">กดเลือกรายการสินค้าทางซ้ายมือ</p>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                      {cart.map(item => (
+                        <div key={item.id} className="flex items-center justify-between p-2 rounded-xl bg-pink-50 border border-pink-100">
+                          <div className="flex-1 pr-2">
+                            <h4 className="font-bold text-xs text-gray-800 truncate">{item.name}</h4>
+                            <p className="text-xs text-pink-600 font-bold">฿{item.selling_price} x {item.qty} = ฿{item.selling_price * item.qty}</p>
+                          </div>
+
+                          <div className="flex items-center gap-1 bg-white border border-pink-200 rounded-lg p-0.5">
+                            <button onClick={() => updateCartQty(item.id, -1)} className="px-2 py-0.5 font-bold text-gray-600 hover:bg-pink-100 rounded">-</button>
+                            <span className="px-2 font-black text-xs text-pink-600">{item.qty}</span>
+                            <button onClick={() => updateCartQty(item.id, 1)} className="px-2 py-0.5 font-bold text-gray-600 hover:bg-pink-100 rounded">+</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="border-t-2 border-pink-100 pt-4 mt-4 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-gray-600">ราคารวมทั้งสิ้น:</span>
+                      <span className="text-2xl font-black text-pink-600">฿{cartTotal.toLocaleString()}</span>
+                    </div>
+
+                    <button
+                      onClick={() => setIsCheckoutOpen(true)}
+                      disabled={cart.length === 0}
+                      className={`w-full py-3 rounded-xl font-black text-white text-base shadow-md transition ${
+                        cart.length > 0 
+                          ? 'bg-pink-500 hover:bg-pink-600 active:scale-95' 
+                          : 'bg-gray-300 cursor-not-allowed'
+                      }`}
+                    >
+                      บันทึกการขาย (ชำระเงิน)
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
 
-          </div>
-        )}
+              </div>
+            )}
 
-        {/* ================= TAB 4: DEBTORS LEDGER ================= */}
-        {activeTab === 'debtors' && (
-          <div className="space-y-6">
-            
-            {/* QR Code Upload / Manage Section */}
-            <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <img src={qrCodeImage} alt="PromptPay QR" className="w-20 h-20 object-contain rounded-xl border-2 border-pink-200" />
-                <div>
-                  <h3 className="font-black text-gray-800 text-base">QR Code PromptPay ของร้าน</h3>
-                  <p className="text-xs text-gray-500">แสดงสำหรับลูกค้าโอนเงินหน้าร้าน</p>
+            {}
+            {activeTab === 'inventory' && (
+              <div className="space-y-6">
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-pink-200 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-gray-500">มูลค่าต้นทุนสินค้าในคลังรวม</p>
+                      <h3 className="text-2xl font-black text-pink-600">฿{totalInventoryCost.toLocaleString()}</h3>
+                    </div>
+                    <div className="bg-pink-100 p-3.5 rounded-xl text-pink-600">
+                      <i className="fa-solid fa-boxes-stacked text-2xl"></i>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-green-200 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-green-600">กำไรที่คาดการณ์ (หากขายหมด)</p>
+                      <h3 className="text-2xl font-black text-green-600">฿{expectedProfit.toLocaleString()}</h3>
+                    </div>
+                    <div className="bg-green-100 p-3.5 rounded-xl text-green-600">
+                      <i className="fa-solid fa-arrow-trend-up text-2xl"></i>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <label className="cursor-pointer px-4 py-2 bg-pink-100 text-pink-700 font-bold text-xs rounded-xl hover:bg-pink-200 transition flex items-center gap-1.5">
-                <ImageIcon className="h-4 w-4" /> เปลี่ยนรูป QR Code
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setQrCodeImage(reader.result);
-                        showAlert('อัปเดตสำเร็จ', 'เปลี่ยนรูป QR Code เรียบร้อยแล้ว');
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
-              </label>
-            </div>
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-pink-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+                  <div className="relative w-full sm:w-72">
+                    <i className="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
+                    <input
+                      type="text"
+                      placeholder="ค้นหาในคลัง..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 border-2 border-pink-200 rounded-xl text-sm font-bold bg-pink-50/30"
+                    />
+                  </div>
 
-            {/* Debtors List */}
-            <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-black text-gray-800 text-lg">สมุดบันทึกคนติดหนี้ (เซ็นไว้)</h3>
-                <span className="text-xs font-bold text-pink-600 bg-pink-100 px-3 py-1 rounded-full">
-                  {debtors.length} รายชื่อ
-                </span>
-              </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      onClick={() => setIsBulkAddOpen(true)}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-pink-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow hover:bg-pink-600"
+                    >
+                      <i className="fa-solid fa-plus"></i> เพิ่มสินค้า (หลายรายการ)
+                    </button>
+                  </div>
+                </div>
 
-              {debtors.length === 0 ? (
-                <p className="text-center py-12 text-gray-400 font-bold">ไม่มีรายการคนติดหนี้</p>
-              ) : (
-                <div className="space-y-3">
-                  {debtors.map(debtor => {
-                    const isPaid = debtor.status === 'paid';
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredProducts.map(product => {
+                    const isLow = product.current_stock <= product.min_stock_alert;
 
                     return (
-                      <div 
-                        key={debtor.id} 
-                        className={`p-4 rounded-2xl border transition ${
-                          isPaid ? 'bg-green-50 border-green-200 opacity-80' : 'bg-pink-50/50 border-pink-200'
-                        }`}
-                      >
-                        <div className="flex justify-between items-center">
+                      <div key={product.id} className="bg-white p-4 rounded-2xl border-2 border-pink-100 shadow-sm space-y-3 relative">
+                        <div className="flex justify-between items-start">
                           <div>
-                            <h4 className={`font-black text-base ${isPaid ? 'line-through text-gray-500' : 'text-gray-800'}`}>
-                              {debtor.name}
-                            </h4>
-                            <p className="text-xs text-gray-400">
-                              ยอดหนี้สะสม: <strong className={isPaid ? 'text-gray-500' : 'text-red-600'}>฿{debtor.total_debt.toLocaleString()}</strong>
-                            </p>
+                            <span className="text-[10px] font-bold text-pink-500 bg-pink-50 px-2 py-0.5 rounded-full">{product.category}</span>
+                            <h3 className="font-bold text-gray-800 text-base mt-1">{product.name}</h3>
                           </div>
-
-                          <div className="flex items-center gap-2">
-                            {isPaid ? (
-                              <span className="px-3 py-1 bg-green-500 text-white font-bold text-xs rounded-full flex items-center gap-1">
-                                <Check className="h-3.5 w-3.5" /> ชำระเงินหรือหนี้แล้ว
-                              </span>
-                            ) : (
-                              <button
-                                onClick={() => handleMarkDebtPaid(debtor.id)}
-                                className="px-3 py-1.5 bg-green-600 text-white font-bold text-xs rounded-xl shadow hover:bg-green-700"
-                              >
-                                ชำระหนี้แล้ว
-                              </button>
-                            )}
-
+                          <div className="flex gap-1">
                             <button
-                              onClick={() => handleDeleteDebtor(debtor.id)}
-                              className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
-                              title="ลบรายชื่อ"
+                              onClick={() => setEditingProduct(product)}
+                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
+                              title="แก้ไข"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <i className="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProduct(product.id)}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+                              title="ลบ"
+                            >
+                              <i className="fa-solid fa-trash-can"></i>
                             </button>
                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 bg-pink-50/50 p-2 rounded-xl text-center text-xs">
+                          <div>
+                            <p className="text-gray-400">ทุน</p>
+                            <p className="font-bold text-gray-700">฿{product.cost_price}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">ราคาขาย</p>
+                            <p className="font-bold text-pink-600">฿{product.selling_price}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">กำไร/ชิ้น</p>
+                            <p className="font-bold text-green-600">฿{product.selling_price - product.cost_price}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                          <div>
+                            <span className="text-xs text-gray-500">คงเหลือ: </span>
+                            <span className={`text-base font-black ${isLow ? 'text-red-600' : 'text-gray-800'}`}>
+                              {product.current_stock} ชิ้น
+                            </span>
+                          </div>
+
+                          <button
+                            onClick={() => setRestockProduct(product)}
+                            className="px-3 py-1.5 bg-green-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow hover:bg-green-600"
+                          >
+                            <i className="fa-solid fa-truck font-normal"></i> รับเข้า (แพ็ค)
+                          </button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              )}
-            </div>
 
-          </div>
-        )}
-
-      </main>
-
-      {/* ================= MODALS & DIALOGS ================= */}
-
-      {/* 1. Checkout Payment Modal */}
-      {isCheckoutOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
-            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
-              <h3 className="font-black text-lg text-pink-700">ชำระเงิน / เลือกการจ่ายเงิน</h3>
-              <button onClick={() => setIsCheckoutOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="text-center py-2 bg-pink-50 rounded-2xl">
-              <p className="text-xs text-gray-500">ยอดที่ต้องชำระทั้งสิ้น</p>
-              <h2 className="text-3xl font-black text-pink-600">฿{cartTotal.toLocaleString()}</h2>
-            </div>
-
-            {/* Payment Method Tabs */}
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => setPaymentMethod('cash')}
-                className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
-                  paymentMethod === 'cash' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
-                }`}
-              >
-                เงินสด
-              </button>
-              <button
-                onClick={() => setPaymentMethod('qr')}
-                className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
-                  paymentMethod === 'qr' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
-                }`}
-              >
-                สแกน QR
-              </button>
-              <button
-                onClick={() => setPaymentMethod('debt')}
-                className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
-                  paymentMethod === 'debt' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
-                }`}
-              >
-                เซ็นหนี้
-              </button>
-            </div>
-
-            {/* Cash Payment Details */}
-            {paymentMethod === 'cash' && (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">รับเงินสดมา (บาท)</label>
-                  <input
-                    type="number"
-                    value={cashReceived}
-                    onChange={(e) => setCashReceived(e.target.value)}
-                    placeholder="0"
-                    className="w-full p-3 border-2 border-pink-200 rounded-xl text-xl font-black text-center focus:outline-none focus:border-pink-500"
-                  />
-                </div>
-
-                {/* Quick Cash Buttons */}
-                <div className="flex gap-1.5 overflow-x-auto">
-                  {[cartTotal, 20, 50, 100, 500, 1000].map(val => (
-                    <button
-                      key={val}
-                      onClick={() => setCashReceived(val.toString())}
-                      className="px-2.5 py-1 bg-pink-100 text-pink-700 font-bold text-xs rounded-lg whitespace-nowrap hover:bg-pink-200"
-                    >
-                      {val === cartTotal ? 'พอดี' : `฿${val}`}
-                    </button>
-                  ))}
-                </div>
-
-                {parseFloat(cashReceived) >= cartTotal && (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-center">
-                    <p className="text-xs text-gray-500">เงินทอน</p>
-                    <p className="text-xl font-black text-green-600">
-                      ฿{(parseFloat(cashReceived) - cartTotal).toLocaleString()}
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* QR Payment Details */}
-            {paymentMethod === 'qr' && (
-              <div className="text-center space-y-2 py-2">
-                <img src={qrCodeImage} alt="QR Code" className="w-48 h-48 mx-auto object-contain rounded-2xl border-2 border-pink-200 shadow" />
-                <p className="text-xs font-bold text-gray-500">สแกนเพื่อโอนเงินเข้าบัญชีร้าน</p>
-              </div>
-            )}
-
-            {/* Debt Payment Details */}
-            {paymentMethod === 'debt' && (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">ชื่อผู้เซ็นหนี้</label>
-                  <input
-                    type="text"
-                    value={debtorName}
-                    onChange={(e) => setDebtorName(e.target.value)}
-                    placeholder="ระบุชื่อลูกหนี้..."
-                    className="w-full p-3 border-2 border-pink-200 rounded-xl font-bold focus:outline-none focus:border-pink-500"
-                  />
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={handleCheckout}
-              className="w-full py-3 bg-pink-500 text-white font-black text-base rounded-xl shadow-md hover:bg-pink-600"
-            >
-              ยืนยันการรับชำระเงิน
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 2. Low Stock Modal */}
-      {isLowStockModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
-            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
-              <h3 className="font-black text-lg text-amber-600 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" /> สินค้าใกล้หมดในคลัง ({lowStockItems.length})
-              </h3>
-              <button onClick={() => setIsLowStockModalOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {lowStockItems.length === 0 ? (
-              <p className="text-center py-8 text-gray-400 font-bold">ไม่มีสินค้าที่ใกล้หมดในขณะนี้</p>
-            ) : (
-              <div className="space-y-2 max-h-72 overflow-y-auto">
-                {lowStockItems.map(item => (
-                  <div key={item.id} className="flex justify-between items-center p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold">
-                    <div>
-                      <p className="text-gray-800">{item.name}</p>
-                      <p className="text-amber-600 font-normal">แจ้งเตือนเมื่อต่ำกว่า: {item.min_stock_alert} ชิ้น</p>
-                    </div>
-                    <span className="text-red-600 font-black text-sm">{item.current_stock} ชิ้น</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <button
-              onClick={() => setIsLowStockModalOpen(false)}
-              className="w-full py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
-            >
-              ปิดหน้าต่าง
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 3. Restock Pack Modal */}
-      {restockProduct && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
-            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
-              <h3 className="font-black text-lg text-pink-700">รับสินค้าเข้า (คำนวณแบบแพ็ค)</h3>
-              <button onClick={() => setRestockProduct(null)} className="p-1 text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <p className="text-sm font-bold text-gray-800 bg-pink-50 p-3 rounded-xl border border-pink-100">
-              สินค้า: {restockProduct.name}
-            </p>
-
-            <div className="space-y-3 text-xs font-bold text-gray-700">
-              <div>
-                <label className="block mb-1">จำนวนกี่แพ็ค/ลัง</label>
-                <input
-                  type="number"
-                  value={restockData.packs}
-                  onChange={(e) => setRestockData({ ...restockData, packs: e.target.value })}
-                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1">จำนวนชิ้นต่อ 1 แพ็ค/ลัง</label>
-                <input
-                  type="number"
-                  value={restockData.piecesPerPack}
-                  onChange={(e) => setRestockData({ ...restockData, piecesPerPack: e.target.value })}
-                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1">ราคาต่อ 1 แพ็ค/ลัง (บาท)</label>
-                <input
-                  type="number"
-                  value={restockData.pricePerPack}
-                  onChange={(e) => setRestockData({ ...restockData, pricePerPack: e.target.value })}
-                  placeholder="เช่น 598"
-                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                />
-              </div>
-
-              {restockData.packs && restockData.piecesPerPack && restockData.pricePerPack && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-xl space-y-1">
-                  <p className="text-green-700">คำนวณได้:</p>
-                  <p className="text-gray-700">- เพิ่มเข้าสต็อกรวม: <strong>{(parseInt(restockData.packs) || 0) * (parseInt(restockData.piecesPerPack) || 0)} ชิ้น</strong></p>
-                  <p className="text-gray-700">- ต้นทุนต่อชิ้นใหม่: <strong>฿{(parseFloat(restockData.pricePerPack) / parseInt(restockData.piecesPerPack)).toFixed(2)}</strong></p>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={handleRestockPack}
-              className="w-full py-3 bg-green-600 text-white font-black rounded-xl shadow hover:bg-green-700"
-            >
-              บันทึกการรับเข้าสต็อก
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Bulk Add Modal */}
-      {isBulkAddOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-xl border-2 border-pink-200 space-y-4 max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
-              <h3 className="font-black text-lg text-pink-700">เพิ่มสินค้าใหม่ (หลายรายการพร้อมกัน)</h3>
-              <button onClick={() => setIsBulkAddOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-              {bulkItems.map((item, idx) => (
-                <div key={idx} className="p-3 rounded-2xl border border-pink-200 bg-pink-50/50 space-y-2 relative">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-pink-600">รายการที่ {idx + 1}</span>
-                    {bulkItems.length > 1 && (
-                      <button
-                        onClick={() => setBulkItems(bulkItems.filter((_, i) => i !== idx))}
-                        className="text-red-500 hover:text-red-700 text-xs font-bold"
-                      >
-                        ลบออก
-                      </button>
+            {}
+            {activeTab === 'history' && (
+              <div className="space-y-6">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-2xl border-2 border-pink-200 shadow-sm">
+                    <h3 className="font-black text-pink-700 text-base mb-3 flex items-center gap-2">
+                      <i className="fa-solid fa-fire text-green-500"></i> สินค้าขายดี Top 5
+                    </h3>
+                    {productPerformance.bestSellers.length === 0 ? (
+                      <p className="text-xs text-gray-400 py-4 text-center">ยังไม่มีข้อมูลการขาย</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {productPerformance.bestSellers.map((item, idx) => (
+                          <div key={item.id} className="flex justify-between items-center text-xs p-2 rounded-xl bg-green-50 border border-green-100">
+                            <span className="font-bold text-gray-800">{idx + 1}. {item.name}</span>
+                            <span className="font-black text-green-700">ขายได้ {item.soldQty} ชิ้น</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold">
+                  <div className="bg-white p-4 rounded-2xl border-2 border-pink-200 shadow-sm">
+                    <h3 className="font-black text-pink-700 text-base mb-3 flex items-center gap-2">
+                      <i className="fa-solid fa-triangle-exclamation text-amber-500"></i> สินค้าขายออกช้า (ควรระวัง)
+                    </h3>
+                    {productPerformance.slowMovers.length === 0 ? (
+                      <p className="text-xs text-gray-400 py-4 text-center">ยังไม่มีข้อมูล</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {productPerformance.slowMovers.map((item, idx) => (
+                          <div key={item.id} className="flex justify-between items-center text-xs p-2 rounded-xl bg-amber-50 border border-amber-100">
+                            <span className="font-bold text-gray-800">{idx + 1}. {item.name}</span>
+                            <span className="font-bold text-amber-700">ขายได้ {item.soldQty} ชิ้น</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-black text-gray-800 text-lg">ประวัติบิลการขายทั้งหมด</h3>
+                    <span className="text-xs font-bold text-pink-600 bg-pink-100 px-3 py-1 rounded-full">
+                      {salesHistory.length} บิล
+                    </span>
+                  </div>
+
+                  {salesHistory.length === 0 ? (
+                    <p className="text-center py-12 text-gray-400 font-bold">ยังไม่มีประวัติการขาย</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {salesHistory.map(bill => (
+                        <div key={bill.id} className="p-4 rounded-2xl border border-pink-100 bg-pink-50/30 space-y-3">
+                          <div className="flex justify-between items-start border-b border-pink-100 pb-2">
+                            <div>
+                              <span className="text-xs font-black text-pink-600">{bill.id}</span>
+                              <p className="text-[10px] text-gray-400">{new Date(bill.date).toLocaleString('th-TH')}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                bill.payment_method === 'cash' ? 'bg-green-100 text-green-700' :
+                                bill.payment_method === 'qr' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {bill.payment_method === 'cash' ? 'เงินสด' : bill.payment_method === 'qr' ? 'โอนเงิน' : `ติดหนี้ (${bill.debtor_name})`}
+                              </span>
+
+                              <button
+                                onClick={() => handleDeleteBill(bill.id)}
+                                className="p-1 text-red-500 hover:bg-red-50 rounded"
+                                title="ลบบิลและคืนสต็อก"
+                              >
+                                <i className="fa-solid fa-trash-can"></i>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="text-xs space-y-1">
+                            {bill.items.map((item, idx) => (
+                              <div key={idx} className="flex justify-between text-gray-700">
+                                <span>- {item.name} ({item.qty} ชิ้น)</span>
+                                <span className="font-bold">฿{item.selling_price * item.qty}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="flex justify-between items-center pt-2 border-t border-pink-100 text-sm">
+                            <span className="text-xs text-gray-500">กำไรบิลนี้: <strong className="text-green-600">฿{bill.profit}</strong></span>
+                            <span className="font-black text-pink-600">ยอดรวม: ฿{bill.total_amount.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )}
+
+            {}
+            {activeTab === 'debtors' && (
+              <div className="space-y-6">
+                
+                <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <img src={qrCodeImage} alt="PromptPay QR" className="w-20 h-20 object-contain rounded-xl border-2 border-pink-200" />
+                    <div>
+                      <h3 className="font-black text-gray-800 text-base">QR Code PromptPay ของร้าน</h3>
+                      <p className="text-xs text-gray-500">แสดงสำหรับลูกค้าโอนเงินหน้าร้าน</p>
+                    </div>
+                  </div>
+
+                  <label className="cursor-pointer px-4 py-2 bg-pink-100 text-pink-700 font-bold text-xs rounded-xl hover:bg-pink-200 transition flex items-center gap-2">
+                    <i className="fa-regular fa-image"></i> เปลี่ยนรูป QR Code
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setQrCodeImage(reader.result);
+                            showAlert('อัปเดตสำเร็จ', 'เปลี่ยนรูป QR Code เรียบร้อยแล้ว');
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border-2 border-pink-200 shadow-sm space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-black text-gray-800 text-lg">สมุดบันทึกคนติดหนี้ (เซ็นไว้)</h3>
+                    <span className="text-xs font-bold text-pink-600 bg-pink-100 px-3 py-1 rounded-full">
+                      {debtors.length} รายชื่อ
+                    </span>
+                  </div>
+
+                  {debtors.length === 0 ? (
+                    <p className="text-center py-12 text-gray-400 font-bold">ไม่มีรายการคนติดหนี้</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {debtors.map(debtor => {
+                        const isPaid = debtor.status === 'paid';
+
+                        return (
+                          <div 
+                            key={debtor.id} 
+                            className={`p-4 rounded-2xl border transition ${
+                              isPaid ? 'bg-green-50 border-green-200 opacity-80' : 'bg-pink-50/50 border-pink-200'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <h4 className={`font-black text-base ${isPaid ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                                  {debtor.name}
+                                </h4>
+                                <p className="text-xs text-gray-400">
+                                  ยอดหนี้สะสม: <strong className={isPaid ? 'text-gray-500' : 'text-red-600'}>฿{debtor.total_debt.toLocaleString()}</strong>
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                {isPaid ? (
+                                  <span className="px-3 py-1 bg-green-500 text-white font-bold text-xs rounded-full flex items-center gap-1">
+                                    <i className="fa-solid fa-check"></i> ชำระเงินหรือหนี้แล้ว
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => handleMarkDebtPaid(debtor.id)}
+                                    className="px-3 py-1.5 bg-green-600 text-white font-bold text-xs rounded-xl shadow hover:bg-green-700"
+                                  >
+                                    ชำระหนี้แล้ว
+                                  </button>
+                                )}
+
+                                <button
+                                  onClick={() => handleDeleteDebtor(debtor.id)}
+                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                                  title="ลบรายชื่อ"
+                                >
+                                  <i className="fa-solid fa-trash-can"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )}
+
+          </main>
+
+          {}
+          {/* Checkout Modal */}
+          {isCheckoutOpen && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+                <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+                  <h3 className="font-black text-lg text-pink-700">ชำระเงิน / เลือกการจ่ายเงิน</h3>
+                  <button onClick={() => setIsCheckoutOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                    <i className="fa-solid fa-xmark text-lg"></i>
+                  </button>
+                </div>
+
+                <div className="text-center py-2 bg-pink-50 rounded-2xl">
+                  <p className="text-xs text-gray-500">ยอดที่ต้องชำระทั้งสิ้น</p>
+                  <h2 className="text-3xl font-black text-pink-600">฿{cartTotal.toLocaleString()}</h2>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setPaymentMethod('cash')}
+                    className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
+                      paymentMethod === 'cash' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
+                    }`}
+                  >
+                    เงินสด
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod('qr')}
+                    className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
+                      paymentMethod === 'qr' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
+                    }`}
+                  >
+                    สแกน QR
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod('debt')}
+                    className={`py-2 rounded-xl text-xs font-bold border-2 transition ${
+                      paymentMethod === 'debt' ? 'border-pink-500 bg-pink-500 text-white' : 'border-gray-200 text-gray-600'
+                    }`}
+                  >
+                    เซ็นหนี้
+                  </button>
+                </div>
+
+                {paymentMethod === 'cash' && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">รับเงินสดมา (บาท)</label>
+                      <input
+                        type="number"
+                        value={cashReceived}
+                        onChange={(e) => setCashReceived(e.target.value)}
+                        placeholder="0"
+                        className="w-full p-3 border-2 border-pink-200 rounded-xl text-xl font-black text-center focus:outline-none focus:border-pink-500"
+                      />
+                    </div>
+
+                    <div className="flex gap-1.5 overflow-x-auto">
+                      {[cartTotal, 20, 50, 100, 500, 1000].map(val => (
+                        <button
+                          key={val}
+                          onClick={() => setCashReceived(val.toString())}
+                          className="px-2.5 py-1 bg-pink-100 text-pink-700 font-bold text-xs rounded-lg whitespace-nowrap hover:bg-pink-200"
+                        >
+                          {val === cartTotal ? 'พอดี' : `฿${val}`}
+                        </button>
+                      ))}
+                    </div>
+
+                    {parseFloat(cashReceived) >= cartTotal && (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-center">
+                        <p className="text-xs text-gray-500">เงินทอน</p>
+                        <p className="text-xl font-black text-green-600">
+                          ฿{(parseFloat(cashReceived) - cartTotal).toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {paymentMethod === 'qr' && (
+                  <div className="text-center space-y-2 py-2">
+                    <img src={qrCodeImage} alt="QR Code" className="w-48 h-48 mx-auto object-contain rounded-2xl border-2 border-pink-200 shadow" />
+                    <p className="text-xs font-bold text-gray-500">สแกนเพื่อโอนเงินเข้าบัญชีร้าน</p>
+                  </div>
+                )}
+
+                {paymentMethod === 'debt' && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">ชื่อผู้เซ็นหนี้</label>
+                      <input
+                        type="text"
+                        value={debtorName}
+                        onChange={(e) => setDebtorName(e.target.value)}
+                        placeholder="ระบุชื่อลูกหนี้..."
+                        className="w-full p-3 border-2 border-pink-200 rounded-xl font-bold focus:outline-none focus:border-pink-500"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleCheckout}
+                  className="w-full py-3 bg-pink-500 text-white font-black text-base rounded-xl shadow-md hover:bg-pink-600"
+                >
+                  ยืนยันการรับชำระเงิน
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Low Stock Alert Modal */}
+          {isLowStockModalOpen && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+                <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+                  <h3 className="font-black text-lg text-amber-600 flex items-center gap-2">
+                    <i className="fa-solid fa-triangle-exclamation"></i> สินค้าใกล้หมดในคลัง ({lowStockItems.length})
+                  </h3>
+                  <button onClick={() => setIsLowStockModalOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                    <i className="fa-solid fa-xmark text-lg"></i>
+                  </button>
+                </div>
+
+                {lowStockItems.length === 0 ? (
+                  <p className="text-center py-8 text-gray-400 font-bold">ไม่มีสินค้าที่ใกล้หมดในขณะนี้</p>
+                ) : (
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {lowStockItems.map(item => (
+                      <div key={item.id} className="flex justify-between items-center p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold">
+                        <div>
+                          <p className="text-gray-800">{item.name}</p>
+                          <p className="text-amber-600 font-normal">แจ้งเตือนเมื่อต่ำกว่า: {item.min_stock_alert} ชิ้น</p>
+                        </div>
+                        <span className="text-red-600 font-black text-sm">{item.current_stock} ชิ้น</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setIsLowStockModalOpen(false)}
+                  className="w-full py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
+                >
+                  ปิดหน้าต่าง
+                </button>
+              </div>
+            </div>
+          )}
+
+          {}
+          {/* Restock Pack Modal */}
+          {restockProduct && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+                <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+                  <h3 className="font-black text-lg text-pink-700">รับสินค้าเข้า (คำนวณแบบแพ็ค)</h3>
+                  <button onClick={() => setRestockProduct(null)} className="p-1 text-gray-400 hover:text-gray-600">
+                    <i className="fa-solid fa-xmark text-lg"></i>
+                  </button>
+                </div>
+
+                <p className="text-sm font-bold text-gray-800 bg-pink-50 p-3 rounded-xl border border-pink-100">
+                  สินค้า: {restockProduct.name}
+                </p>
+
+                <div className="space-y-3 text-xs font-bold text-gray-700">
+                  <div>
+                    <label className="block mb-1">จำนวนกี่แพ็ค/ลัง</label>
+                    <input
+                      type="number"
+                      value={restockData.packs}
+                      onChange={(e) => setRestockData({ ...restockData, packs: e.target.value })}
+                      className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1">จำนวนชิ้นต่อ 1 แพ็ค/ลัง</label>
+                    <input
+                      type="number"
+                      value={restockData.piecesPerPack}
+                      onChange={(e) => setRestockData({ ...restockData, piecesPerPack: e.target.value })}
+                      className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1">ราคาต่อ 1 แพ็ค/ลัง (บาท)</label>
+                    <input
+                      type="number"
+                      value={restockData.pricePerPack}
+                      onChange={(e) => setRestockData({ ...restockData, pricePerPack: e.target.value })}
+                      placeholder="เช่น 598"
+                      className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                    />
+                  </div>
+
+                  {restockData.packs && restockData.piecesPerPack && restockData.pricePerPack && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-xl space-y-1">
+                      <p className="text-green-700">คำนวณได้:</p>
+                      <p className="text-gray-700">- เพิ่มเข้าสต็อกรวม: <strong>{(parseInt(restockData.packs) || 0) * (parseInt(restockData.piecesPerPack) || 0)} ชิ้น</strong></p>
+                      <p className="text-gray-700">- ต้นทุนต่อชิ้นใหม่: <strong>฿{(parseFloat(restockData.pricePerPack) / parseInt(restockData.piecesPerPack)).toFixed(2)}</strong></p>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleRestockPack}
+                  className="w-full py-3 bg-green-600 text-white font-black rounded-xl shadow hover:bg-green-700"
+                >
+                  บันทึกการรับเข้าสต็อก
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Add Modal */}
+          {isBulkAddOpen && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-xl border-2 border-pink-200 space-y-4 max-h-[90vh] flex flex-col">
+                <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+                  <h3 className="font-black text-lg text-pink-700">เพิ่มสินค้าใหม่ (หลายรายการพร้อมกัน)</h3>
+                  <button onClick={() => setIsBulkAddOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                    <i className="fa-solid fa-xmark text-lg"></i>
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                  {bulkItems.map((item, idx) => (
+                    <div key={idx} className="p-3 rounded-2xl border border-pink-200 bg-pink-50/50 space-y-2 relative">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-pink-600">รายการที่ {idx + 1}</span>
+                        {bulkItems.length > 1 && (
+                          <button
+                            onClick={() => setBulkItems(bulkItems.filter((_, i) => i !== idx))}
+                            className="text-red-500 hover:text-red-700 text-xs font-bold"
+                          >
+                            ลบออก
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold">
+                        <input
+                          type="text"
+                          placeholder="ชื่อสินค้า..."
+                          value={item.name}
+                          onChange={(e) => {
+                            const updated = [...bulkItems];
+                            updated[idx].name = e.target.value;
+                            setBulkItems(updated);
+                          }}
+                          className="p-2 border rounded-xl"
+                        />
+
+                        <select
+                          value={item.category}
+                          onChange={(e) => {
+                            const updated = [...bulkItems];
+                            updated[idx].category = e.target.value;
+                            setBulkItems(updated);
+                          }}
+                          className="p-2 border rounded-xl"
+                        >
+                          {categories.filter(c => c !== 'ทั้งหมด').map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+
+                        <input
+                          type="number"
+                          placeholder="ราคาทุน..."
+                          value={item.cost_price}
+                          onChange={(e) => {
+                            const updated = [...bulkItems];
+                            updated[idx].cost_price = e.target.value;
+                            setBulkItems(updated);
+                          }}
+                          className="p-2 border rounded-xl"
+                        />
+
+                        <input
+                          type="number"
+                          placeholder="ราคาขาย..."
+                          value={item.selling_price}
+                          onChange={(e) => {
+                            const updated = [...bulkItems];
+                            updated[idx].selling_price = e.target.value;
+                            setBulkItems(updated);
+                          }}
+                          className="p-2 border rounded-xl"
+                        />
+
+                        <input
+                          type="number"
+                          placeholder="จำนวนสต็อก..."
+                          value={item.current_stock}
+                          onChange={(e) => {
+                            const updated = [...bulkItems];
+                            updated[idx].current_stock = e.target.value;
+                            setBulkItems(updated);
+                          }}
+                          className="p-2 border rounded-xl"
+                        />
+
+                        <input
+                          type="number"
+                          placeholder="เตือนเมื่อต่ำกว่า..."
+                          value={item.min_stock_alert}
+                          onChange={(e) => {
+                            const updated = [...bulkItems];
+                            updated[idx].min_stock_alert = e.target.value;
+                            setBulkItems(updated);
+                          }}
+                          className="p-2 border rounded-xl"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    onClick={() => setBulkItems([...bulkItems, { name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }])}
+                    className="w-full py-2 bg-pink-100 text-pink-700 font-bold text-xs rounded-xl border border-dashed border-pink-300 hover:bg-pink-200"
+                  >
+                    + เพิ่มอีกรายการ
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleSaveBulkProducts}
+                  className="w-full py-3 bg-pink-500 text-white font-black rounded-xl shadow hover:bg-pink-600"
+                >
+                  บันทึกสินค้าทั้งหมด
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Edit Product Modal */}
+          {editingProduct && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+                <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+                  <h3 className="font-black text-lg text-pink-700">แก้ไขข้อมูลสินค้า</h3>
+                  <button onClick={() => setEditingProduct(null)} className="p-1 text-gray-400 hover:text-gray-600">
+                    <i className="fa-solid fa-xmark text-lg"></i>
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs font-bold text-gray-700">
+                  <div>
+                    <label className="block mb-1">ชื่อสินค้า</label>
                     <input
                       type="text"
-                      placeholder="ชื่อสินค้า..."
-                      value={item.name}
-                      onChange={(e) => {
-                        const updated = [...bulkItems];
-                        updated[idx].name = e.target.value;
-                        setBulkItems(updated);
-                      }}
-                      className="p-2 border rounded-xl"
+                      value={editingProduct.name}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                      className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
                     />
+                  </div>
 
+                  <div>
+                    <label className="block mb-1">หมวดหมู่</label>
                     <select
-                      value={item.category}
-                      onChange={(e) => {
-                        const updated = [...bulkItems];
-                        updated[idx].category = e.target.value;
-                        setBulkItems(updated);
-                      }}
-                      className="p-2 border rounded-xl"
+                      value={editingProduct.category}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                      className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
                     >
                       {categories.filter(c => c !== 'ทั้งหมด').map(c => (
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
+                  </div>
 
-                    <input
-                      type="number"
-                      placeholder="ราคาทุน..."
-                      value={item.cost_price}
-                      onChange={(e) => {
-                        const updated = [...bulkItems];
-                        updated[idx].cost_price = e.target.value;
-                        setBulkItems(updated);
-                      }}
-                      className="p-2 border rounded-xl"
-                    />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block mb-1">ราคาทุน</label>
+                      <input
+                        type="number"
+                        value={editingProduct.cost_price}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, cost_price: parseFloat(e.target.value) || 0 })}
+                        className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1">ราคาขาย</label>
+                      <input
+                        type="number"
+                        value={editingProduct.selling_price}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, selling_price: parseFloat(e.target.value) || 0 })}
+                        className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                      />
+                    </div>
+                  </div>
 
-                    <input
-                      type="number"
-                      placeholder="ราคาขาย..."
-                      value={item.selling_price}
-                      onChange={(e) => {
-                        const updated = [...bulkItems];
-                        updated[idx].selling_price = e.target.value;
-                        setBulkItems(updated);
-                      }}
-                      className="p-2 border rounded-xl"
-                    />
-
-                    <input
-                      type="number"
-                      placeholder="จำนวนสต็อก..."
-                      value={item.current_stock}
-                      onChange={(e) => {
-                        const updated = [...bulkItems];
-                        updated[idx].current_stock = e.target.value;
-                        setBulkItems(updated);
-                      }}
-                      className="p-2 border rounded-xl"
-                    />
-
-                    <input
-                      type="number"
-                      placeholder="เตือนเมื่อต่ำกว่า..."
-                      value={item.min_stock_alert}
-                      onChange={(e) => {
-                        const updated = [...bulkItems];
-                        updated[idx].min_stock_alert = e.target.value;
-                        setBulkItems(updated);
-                      }}
-                      className="p-2 border rounded-xl"
-                    />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block mb-1">สต็อกปัจจุบัน</label>
+                      <input
+                        type="number"
+                        value={editingProduct.current_stock}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, current_stock: parseInt(e.target.value) || 0 })}
+                        className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1">เตือนเมื่อต่ำกว่า</label>
+                      <input
+                        type="number"
+                        value={editingProduct.min_stock_alert}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, min_stock_alert: parseInt(e.target.value) || 5 })}
+                        className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
+                      />
+                    </div>
                   </div>
                 </div>
-              ))}
 
-              <button
-                onClick={() => setBulkItems([...bulkItems, { name: '', category: 'เครื่องดื่มแอลกอฮอล์', cost_price: '', selling_price: '', current_stock: '', min_stock_alert: '5' }])}
-                className="w-full py-2 bg-pink-100 text-pink-700 font-bold text-xs rounded-xl border border-dashed border-pink-300 hover:bg-pink-200"
-              >
-                + เพิ่มอีกรายการ
-              </button>
-            </div>
-
-            <button
-              onClick={handleSaveBulkProducts}
-              className="w-full py-3 bg-pink-500 text-white font-black rounded-xl shadow hover:bg-pink-600"
-            >
-              บันทึกสินค้าทั้งหมด
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 5. Edit Product Modal */}
-      {editingProduct && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
-            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
-              <h3 className="font-black text-lg text-pink-700">แก้ไขข้อมูลสินค้า</h3>
-              <button onClick={() => setEditingProduct(null)} className="p-1 text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs font-bold text-gray-700">
-              <div>
-                <label className="block mb-1">ชื่อสินค้า</label>
-                <input
-                  type="text"
-                  value={editingProduct.name}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1">หมวดหมู่</label>
-                <select
-                  value={editingProduct.category}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                  className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                >
-                  {categories.filter(c => c !== 'ทั้งหมด').map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block mb-1">ราคาทุน</label>
-                  <input
-                    type="number"
-                    value={editingProduct.cost_price}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, cost_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1">ราคาขาย</label>
-                  <input
-                    type="number"
-                    value={editingProduct.selling_price}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, selling_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block mb-1">สต็อกปัจจุบัน</label>
-                  <input
-                    type="number"
-                    value={editingProduct.current_stock}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, current_stock: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1">เตือนเมื่อต่ำกว่า</label>
-                  <input
-                    type="number"
-                    value={editingProduct.min_stock_alert}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, min_stock_alert: parseInt(e.target.value) || 5 })}
-                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setProducts(products.map(p => p.id === editingProduct.id ? editingProduct : p));
-                setEditingProduct(null);
-                showAlert('บันทึกสำเร็จ', 'อัปเดตข้อมูลสินค้าเรียบร้อยแล้ว');
-              }}
-              className="w-full py-3 bg-pink-500 text-white font-black rounded-xl shadow hover:bg-pink-600"
-            >
-              บันทึกการแก้ไข
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 6. Settings Modal */}
-      {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
-            <div className="flex justify-between items-center border-b border-pink-100 pb-3">
-              <h3 className="font-black text-lg text-pink-700 flex items-center gap-2">
-                <Settings className="h-5 w-5" /> ตั้งค่าระบบ
-              </h3>
-              <button onClick={() => setIsSettingsOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Backup & Restore */}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl space-y-3">
-              <h4 className="font-black text-sm text-blue-800 flex items-center gap-1.5">
-                <Download className="h-4 w-4" /> สำรองและกู้คืนข้อมูล
-              </h4>
-              <p className="text-xs text-blue-600">ดาวน์โหลดเก็บไว้เพื่อป้องกันข้อมูลสูญหาย</p>
-              
-              <div className="flex gap-2">
                 <button
-                  onClick={handleExportData}
-                  className="flex-1 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow hover:bg-blue-700 flex items-center justify-center gap-1"
+                  onClick={() => {
+                    setProducts(products.map(p => p.id === editingProduct.id ? editingProduct : p));
+                    setEditingProduct(null);
+                    showAlert('บันทึกสำเร็จ', 'อัปเดตข้อมูลสินค้าเรียบร้อยแล้ว');
+                  }}
+                  className="w-full py-3 bg-pink-500 text-white font-black rounded-xl shadow hover:bg-pink-600"
                 >
-                  <Download className="h-3.5 w-3.5" /> ดาวน์โหลดเก็บไว้
+                  บันทึกการแก้ไข
                 </button>
-
-                <label className="flex-1 py-2 bg-white border border-blue-300 text-blue-600 font-bold text-xs rounded-xl shadow hover:bg-blue-50 flex items-center justify-center gap-1 cursor-pointer">
-                  <Upload className="h-3.5 w-3.5" /> อัปโหลดกู้คืน
-                  <input
-                    type="file"
-                    accept=".json"
-                    ref={fileInputRef}
-                    onChange={handleImportData}
-                    className="hidden"
-                  />
-                </label>
               </div>
             </div>
+          )}
 
-            {/* Password Change */}
-            <div className="p-4 bg-pink-50 border border-pink-200 rounded-2xl space-y-3">
-              <h4 className="font-black text-sm text-pink-800 flex items-center gap-1.5">
-                <Lock className="h-4 w-4" /> รหัสผ่านผู้ดูแลระบบ (สำหรับลบข้อมูล)
-              </h4>
-              <input
-                type="text"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                className="w-full p-2.5 border-2 border-pink-200 rounded-xl text-center font-black text-base"
-              />
-              <p className="text-[10px] text-pink-500 text-center">รหัสเริ่มต้นคือ 4497 สามารถแก้ไขเป็นตัวเลขใดก็ได้</p>
+          {}
+          {/* Settings Modal */}
+          {isSettingsOpen && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border-2 border-pink-200 space-y-4">
+                <div className="flex justify-between items-center border-b border-pink-100 pb-3">
+                  <h3 className="font-black text-lg text-pink-700 flex items-center gap-2">
+                    <i className="fa-solid fa-gear"></i> ตั้งค่าระบบ
+                  </h3>
+                  <button onClick={() => setIsSettingsOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                    <i className="fa-solid fa-xmark text-lg"></i>
+                  </button>
+                </div>
+
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl space-y-3">
+                  <h4 className="font-black text-sm text-blue-800 flex items-center gap-2">
+                    <i className="fa-solid fa-download"></i> สำรองและกู้คืนข้อมูล
+                  </h4>
+                  <p className="text-xs text-blue-600">ดาวน์โหลดเก็บไว้เพื่อป้องกันข้อมูลสูญหาย</p>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleExportData}
+                      className="flex-1 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow hover:bg-blue-700 flex items-center justify-center gap-1.5"
+                    >
+                      <i className="fa-solid fa-download"></i> ดาวน์โหลดเก็บไว้
+                    </button>
+
+                    <label className="flex-1 py-2 bg-white border border-blue-300 text-blue-600 font-bold text-xs rounded-xl shadow hover:bg-blue-50 flex items-center justify-center gap-1.5 cursor-pointer">
+                      <i className="fa-solid fa-upload"></i> อัปโหลดกู้คืน
+                      <input
+                        type="file"
+                        accept=".json"
+                        ref={fileInputRef}
+                        onChange={handleImportData}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-pink-50 border border-pink-200 rounded-2xl space-y-3">
+                  <h4 className="font-black text-sm text-pink-800 flex items-center gap-2">
+                    <i className="fa-solid fa-lock"></i> รหัสผ่านผู้ดูแลระบบ (สำหรับลบข้อมูล)
+                  </h4>
+                  <input
+                    type="text"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    className="w-full p-2.5 border-2 border-pink-200 rounded-xl text-center font-black text-base"
+                  />
+                  <p className="text-[10px] text-pink-500 text-center">รหัสเริ่มต้นคือ 4497 สามารถแก้ไขเป็นตัวเลขใดก็ได้</p>
+                </div>
+
+                <button
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="w-full py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
+                >
+                  ปิด
+                </button>
+              </div>
             </div>
+          )}
 
-            <button
-              onClick={() => setIsSettingsOpen(false)}
-              className="w-full py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
-            >
-              ปิด
-            </button>
-          </div>
+          {/* Password Modal */}
+          {passwordModal.isOpen && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl max-w-xs w-full p-6 shadow-xl border-2 border-pink-200 space-y-4 text-center">
+                <div className="bg-pink-100 p-3 rounded-full w-12 h-12 mx-auto flex items-center justify-center text-pink-600">
+                  <i className="fa-solid fa-shield-halved text-xl"></i>
+                </div>
+
+                <div>
+                  <h3 className="font-black text-base text-gray-800">{passwordModal.title}</h3>
+                  <p className="text-xs text-gray-500 mt-1">กรุณากรอกรหัสผ่านเพื่อยืนยัน (4497)</p>
+                </div>
+
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder="รหัสผ่าน..."
+                  className="w-full p-3 border-2 border-pink-200 rounded-xl text-center font-black text-lg focus:outline-none focus:border-pink-500"
+                  autoFocus
+                />
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPasswordModal({ isOpen: false, title: '', action: null })}
+                    className="flex-1 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    onClick={verifyPassword}
+                    className="flex-1 py-2 bg-pink-500 text-white font-bold text-xs rounded-xl shadow hover:bg-pink-600"
+                  >
+                    ยืนยัน
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Custom Alert Dialog */}
+          {alertDialog.isOpen && (
+            <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl max-w-xs w-full p-5 shadow-xl border-2 border-pink-200 space-y-3 text-center">
+                <h3 className="font-black text-base text-gray-800">{alertDialog.title}</h3>
+                <p className="text-xs text-gray-600">{alertDialog.message}</p>
+                <button
+                  onClick={() => setAlertDialog({ isOpen: false, title: '', message: '' })}
+                  className="w-full py-2 bg-pink-500 text-white font-bold text-xs rounded-xl shadow hover:bg-pink-600"
+                >
+                  ตกลง
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
-      )}
+      );
+    }
 
-      {/* 7. Password Verification Modal */}
-      {passwordModal.isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-xs w-full p-6 shadow-xl border-2 border-pink-200 space-y-4 text-center">
-            <div className="bg-pink-100 p-3 rounded-full w-12 h-12 mx-auto flex items-center justify-center text-pink-600">
-              <Shield className="h-6 w-6" />
-            </div>
-
-            <div>
-              <h3 className="font-black text-base text-gray-800">{passwordModal.title}</h3>
-              <p className="text-xs text-gray-500 mt-1">กรุณากรอกรหัสผ่านเพื่อยืนยัน (4497)</p>
-            </div>
-
-            <input
-              type="password"
-              value={passwordInput}
-              onChange={(e) => setPasswordInput(e.target.value)}
-              placeholder="รหัสผ่าน..."
-              className="w-full p-3 border-2 border-pink-200 rounded-xl text-center font-black text-lg focus:outline-none focus:border-pink-500"
-              autoFocus
-            />
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPasswordModal({ isOpen: false, title: '', action: null })}
-                className="flex-1 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl"
-              >
-                ยกเลิก
-              </button>
-              <button
-                onClick={verifyPassword}
-                className="flex-1 py-2 bg-pink-500 text-white font-bold text-xs rounded-xl shadow hover:bg-pink-600"
-              >
-                ยืนยัน
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 8. Alert Dialog */}
-      {alertDialog.isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-xs w-full p-5 shadow-xl border-2 border-pink-200 space-y-3 text-center">
-            <h3 className="font-black text-base text-gray-800">{alertDialog.title}</h3>
-            <p className="text-xs text-gray-600">{alertDialog.message}</p>
-            <button
-              onClick={() => setAlertDialog({ isOpen: false, title: '', message: '' })}
-              className="w-full py-2 bg-pink-500 text-white font-bold text-xs rounded-xl shadow hover:bg-pink-600"
-            >
-              ตกลง
-            </button>
-          </div>
-        </div>
-      )}
-
-    </div>
-  );
-}
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
-    </script>
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
+
