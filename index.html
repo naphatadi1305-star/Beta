@@ -102,7 +102,15 @@
       const [adminPassword, setAdminPassword] = useState(() => {
         return localStorage.getItem('grocery_admin_password') || '4497';
       });
- 
+       // State บันทึกประวัติการซื้อของเข้าร้าน
+      const [purchaseHistory, setPurchaseHistory] = useState(() => {
+        const saved = localStorage.getItem('grocery_purchase_history');
+        return saved ? JSON.parse(saved) : [];
+      });
+
+      // State สำหรับเปิด Modal แก้ไขประวัติการซื้อ
+      const [editingPurchase, setEditingPurchase] = useState(null);
+
   // ==========================================
   // 🚀 ระบบ AUTO-SAVE & REALTIME SYNC
   // ==========================================
@@ -370,9 +378,40 @@
           return p;
         }));
 
+        // 🟢 บันทึกประวัติการซื้อ
+        const newRecord = {
+          id: 'PUR-' + Date.now(),
+          date: new Date().toISOString(),
+          productId: restockProduct.id,
+          productName: restockProduct.name,
+          qty: totalNewPieces,
+          costPrice: Math.round(newCostPerPiece * 100) / 100,
+          totalPrice: pricePerPack * packs,
+          note: `${packs} แพ็ค (แพ็คละ ${piecesPerPack} ชิ้น)`
+        };
+        setPurchaseHistory([newRecord, ...purchaseHistory]);
+
         setRestockProduct(null);
         setRestockData({ packs: 1, piecesPerPack: 12, pricePerPack: '' });
         showAlert('บันทึกสำเร็จ', `เพิ่มสต็อก ${restockProduct.name} จำนวน ${totalNewPieces} ชิ้นเรียบร้อยแล้ว`);
+      };
+
+      // ลบประวัติการซื้อ (ต้องใส่รหัสผ่านยืนยัน)
+      const handleDeletePurchase = (purchaseId) => {
+        requestPassword('ยืนยันการลบประวัติซื้อสินค้า', () => {
+          setPurchaseHistory(purchaseHistory.filter(p => p.id !== purchaseId));
+          showAlert('สำเร็จ', 'ลบประวัติการรับเข้าเรียบร้อยแล้ว');
+        });
+      };
+
+      // บันทึกการแก้ไขประวัติการซื้อ
+      const handleSaveEditPurchase = () => {
+        if (!editingPurchase) return;
+        setPurchaseHistory(purchaseHistory.map(p => 
+          p.id === editingPurchase.id ? editingPurchase : p
+        ));
+        setEditingPurchase(null);
+        showAlert('สำเร็จ', 'แก้ไขประวัติการรับเข้าเรียบร้อยแล้ว');
       };
 
       const handleSaveBulkProducts = () => {
@@ -607,6 +646,19 @@
               >
                 <i className="fa-solid fa-book"></i> สมุดเซ็นหนี้
               </button>
+
+                            <button
+                onClick={() => setActiveTab('purchase_history')}
+                className={`flex-1 py-2.5 px-3 text-sm font-bold flex items-center justify-center gap-2 whitespace-nowrap border-b-2 transition ${
+                  activeTab === 'purchase_history' 
+                    ? 'border-pink-500 text-pink-600 bg-white rounded-t-lg shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-pink-500'
+                }`}
+              >
+                <i className="fa-solid fa-truck-ramping"></i> ประวัติซื้อของเข้า
+              </button>
+
+              
             </nav>
           </header>
 
@@ -1054,6 +1106,151 @@
 
               </div>
             )}
+
+                    {/* TAB 5: ประวัติซื้อของเข้า */}
+        {activeTab === 'purchase_history' && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <i className="fa-solid fa-truck-ramping text-pink-500"></i> ประวัติการซื้อสินค้าเข้าร้าน
+              </h2>
+              <span className="text-xs bg-pink-50 text-pink-600 font-semibold px-3 py-1 rounded-full">
+                ทั้งหมด {purchaseHistory.length} รายการ
+              </span>
+            </div>
+
+            {purchaseHistory.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <i className="fa-solid fa-boxes-packing text-4xl mb-2"></i>
+                <p>ยังไม่มีประวัติการบันทึกซื้อสินค้าเข้าร้าน</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-gray-600 border-b">
+                      <th className="p-3">วัน-เวลา</th>
+                      <th className="p-3">ชื่อสินค้า</th>
+                      <th className="p-3 text-right">จำนวนชิ้น</th>
+                      <th className="p-3 text-right">ราคาทุน/ชิ้น</th>
+                      <th className="p-3 text-right">ราคารวม</th>
+                      <th className="p-3">หมายเหตุ</th>
+                      <th className="p-3 text-center">จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {purchaseHistory.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50">
+                        <td className="p-3 text-xs text-gray-500">
+                          {new Date(item.date).toLocaleString('th-TH')}
+                        </td>
+                        <td className="p-3 font-semibold text-gray-800">{item.productName}</td>
+                        <td className="p-3 text-right font-bold text-blue-600">{item.qty}</td>
+                        <td className="p-3 text-right">฿{item.costPrice?.toFixed(2)}</td>
+                        <td className="p-3 text-right font-bold text-gray-800">฿{item.totalPrice?.toFixed(2)}</td>
+                        <td className="p-3 text-xs text-gray-500">{item.note || '-'}</td>
+                        <td className="p-3 text-center">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => setEditingPurchase(item)}
+                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                              title="แก้ไข"
+                            >
+                              <i className="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button
+                              onClick={() => handleDeletePurchase(item.id)}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                              title="ลบ"
+                            >
+                              <i className="fa-solid fa-trash-can"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* MODAL แก้ไขประวัติการซื้อ */}
+        {editingPurchase && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i className="fa-solid fa-pen-to-square text-blue-500"></i> แก้ไขประวัติการซื้อ
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">ชื่อสินค้า</label>
+                  <input
+                    type="text"
+                    value={editingPurchase.productName}
+                    onChange={(e) => setEditingPurchase({...editingPurchase, productName: e.target.value})}
+                    className="w-full p-2.5 border rounded-xl text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">จำนวน (ชิ้น)</label>
+                    <input
+                      type="number"
+                      value={editingPurchase.qty}
+                      onChange={(e) => setEditingPurchase({...editingPurchase, qty: parseInt(e.target.value) || 0})}
+                      className="w-full p-2.5 border rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">ราคาทุน/ชิ้น</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editingPurchase.costPrice}
+                      onChange={(e) => setEditingPurchase({...editingPurchase, costPrice: parseFloat(e.target.value) || 0})}
+                      className="w-full p-2.5 border rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">ราคารวมทั้งหมด (บาท)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingPurchase.totalPrice}
+                    onChange={(e) => setEditingPurchase({...editingPurchase, totalPrice: parseFloat(e.target.value) || 0})}
+                    className="w-full p-2.5 border rounded-xl text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">หมายเหตุ</label>
+                  <input
+                    type="text"
+                    value={editingPurchase.note || ''}
+                    onChange={(e) => setEditingPurchase({...editingPurchase, note: e.target.value})}
+                    className="w-full p-2.5 border rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => setEditingPurchase(null)}
+                  className="flex-1 py-2.5 border rounded-xl text-gray-600 font-bold text-sm hover:bg-gray-50"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={handleSaveEditPurchase}
+                  className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700"
+                >
+                  บันทึกแก้ไข
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
           </main>
 
